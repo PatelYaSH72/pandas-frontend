@@ -31,9 +31,12 @@ export default function ReasourcesAll() {
   (item) => item.slug === slug
 );
 
-  useEffect(()=>{
-    SetResorceData(technologyData)
-  },[Technologyes_Data])
+  useEffect(() => {
+  const technologyData = Technologyes_Data?.find((item) => item.slug === slug);
+  if (technologyData) {
+    SetResorceData(technologyData);
+  }
+}, [slug, Technologyes_Data]);
 
   console.log(Technologyes_Data[0].category);
   
@@ -44,8 +47,7 @@ export default function ReasourcesAll() {
   const [level, setLevel] = useState("beginner");
   const data = resorceData?.learningRoadmapData?.[level];
   const navigate = useNavigate();
-  const stepData =
-resorceData?.detailedStepByStepLearning?.[resorceData?.technologyKey]?.[level];
+ const stepData = resorceData?.detailedStepByStepLearning?.[level];
 
 
 
@@ -165,7 +167,7 @@ resorceData?.detailedStepByStepLearning?.[resorceData?.technologyKey]?.[level];
                 </span>
                 {resorceData?.category?.map((cat, i) => (
                   <span
-                    key={cat.key}
+                    key={cat.name}
                     className="px-3 py-1 rounded-full bg-green-100 text-green-600 cursor-pointer hover:bg-green-200 hover:text-green-700 transition"
                   >
                     {cat.label} 
