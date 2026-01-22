@@ -55,7 +55,7 @@ const ToolCard = ({ tool }) => (
 </div>
 
     <Link 
-      to={`/Ai-Tools/${tool.id}`} 
+      to={`/Ai-Tools/${tool._id}`} 
       
       rel="noreferrer"
       className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white rounded-xl text-sm font-semibold transition-all"
@@ -74,13 +74,21 @@ export default function Ai_Tools() {
   const [visibleCount, setVisibleCount] = useState(6);
   const navigate = useNavigate();
 
-  const { AIToolsData } = useContext(AIContext)
+  const { AIToolsData, getAIToolsData, token } = useContext(AIContext)
+
+  
+  
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    getAIToolsData();
+  }, []);
+
 
   const filteredTools = useMemo(() => {
     return AIToolsData.filter(tool => {
@@ -182,7 +190,7 @@ export default function Ai_Tools() {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             >
               {filteredTools.slice(0,visibleCount).map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
+                <ToolCard key={tool._id} tool={tool} />
               ))}
             </motion.div>
           ) : (

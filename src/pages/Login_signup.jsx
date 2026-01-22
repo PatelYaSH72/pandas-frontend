@@ -49,8 +49,8 @@ const Login_signup = () => {
     if (isLogin) {
       // LOGIN
       response = await axios.post(
-        backendUrl + "/api/user/login",
-        loginData
+        backendUrl + "/api/user/userLogin",
+        loginData,{headers:{token:token}}
       );
     } else {
       // SIGNUP

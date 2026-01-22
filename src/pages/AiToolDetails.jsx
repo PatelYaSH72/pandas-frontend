@@ -126,9 +126,11 @@ const ResourceLink = ({ icon: Icon, label, href }) => {
 // --- MAIN PAGE ---
 
 export default function AiToolDetails() {
-  const { AIToolsData } = useContext(AIContext);
 
-  // console.log(AIToolsData)
+
+  const { AIToolsData, getAIToolsData, token } = useContext(AIContext)
+
+  console.log(AIToolsData)
   // console.log(AIToolsData)
   // Demo ke liye hum pehla tool dikha rahe hain, real app mein slug/id se filter hoga
   const tool = AIToolsData;
@@ -137,6 +139,9 @@ export default function AiToolDetails() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [userReview, setUserReview] = useState({ rating: 5, comment: "" });
   const navigate = useNavigate();
+
+  console.log(toolData);
+  
 
   const [reviews, setReviews] = useState([
     {
@@ -157,16 +162,28 @@ export default function AiToolDetails() {
 
   const { id } = useParams();
 
+  console.log(id);
+  
+
   useEffect(() => {
     if (AIToolsData && id) {
-      const foundTool = AIToolsData.find((tool) => tool.id === Number(id));
+      const foundTool = AIToolsData.find((tool) => tool._id === id);
       setToolData(foundTool || null);
     }
   }, [id, AIToolsData]);
 
-  if (!toolData) {
-    return <div>Loading or Tool not found...</div>;
-  }
+  useEffect(() => {
+      getAIToolsData();
+    }, []);
+
+ if (!toolData) {
+  return (
+    <div className="text-center py-20 text-slate-400 font-bold">
+      Loading tool details...
+    </div>
+  );
+}
+
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -510,7 +527,7 @@ export default function AiToolDetails() {
       <motion.div 
         key={item.id || i} 
         onClick={() => {
-          navigate(`/Ai-Tools/${item.id}`);
+          navigate(`/Ai-Tools/${item._id}`);
           window.scrollTo({ top: 0, behavior: 'smooth' }); // Page ko upar le jayega smoothly
         }}
         whileHover={{ y: -8 }}
