@@ -18,16 +18,12 @@ export const UserProvider = ({ children }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL
 
      useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      setIsLoggedIn(true);
-    } else {
-      localStorage.removeItem("token");
-      setIsLoggedIn(false);
-      localStorage.removeItem("userData");
-      setUserData({});
-    }
-  }, [token]);
+  if (token) {
+    localStorage.setItem("token", token);
+  } else {
+    localStorage.removeItem("token");
+  }
+}, [token]);
 
   useEffect(() => {
   if (userData && Object.keys(userData).length > 0) {

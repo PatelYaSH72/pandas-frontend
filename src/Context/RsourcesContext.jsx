@@ -1,19 +1,47 @@
-import React, { createContext, useEffect, useState } from 'react';
-import { Technologyes_Data, TechnologyesData, TechnologyesName } from '../assets/assets';
+import React, { createContext, useEffect, useState, useContext } from "react";
+import {
+  // Technologyes_Data,
+  TechnologyesName,
+} from "../assets/assets";
+import axios from "axios";
+import { UserContext } from "./UserContext";
 
-// 1. Context Create Karein
 export const MyContext = createContext();
 
-// 2. Provider Component Banayein
 export const MyProvider = ({ children }) => {
+  const { token } = useContext(UserContext);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  const [Technologyes_Data, setResourcesData] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(
+          `${backendUrl}/api/user/Resources-Data`,
+          { headers: { token } }
+        );
+        setResourcesData(res.data.data);
+      } catch (error) {
+        console.error(error.response?.data || error.message);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  // console.log(resourcesData);
   
+
   const value = {
-    TechnologyesData,
     Technologyes_Data,
-    TechnologyesName
+    TechnologyesName,
+    token,
+    backendUrl
   };
-// console.log(TechnologyesData)
+
   return (
     <MyContext.Provider value={value}>
       {children}

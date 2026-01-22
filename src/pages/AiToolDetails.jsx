@@ -18,58 +18,10 @@ import {
 } from "lucide-react";
 import { AIContext } from "../Context/AitoolsContext";
 import { Link, useNavigate, useParams } from "react-router";
+import axios from "axios";
 
 // --- MULTIPLE MOCK DATA (As requested) ---
-const TOOLS_COLLECTION = [
-  {
-    id: 12,
-    name: "Beautiful AI",
-    rating: 4.9,
-    pricing: "Freemium",
-    category: [
-      "Media & Entertainment Technology",
-      "Artificial Intelligence",
-      "Web Development",
-    ],
-    whatItDoes:
-      "AI-powered smart presentation builder. It automates the design process so you can focus on your message rather than formatting slides.",
-    howToUse: [
-      "Choose theme",
-      "Add content",
-      "AI design slides",
-      "Export deck",
-    ],
-    techRelevance: ["Artificial Intelligence", "Web Development"],
-    image:
-      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop",
-    officialLink: "https://www.beautiful.ai",
-    docLink: "https://www.beautiful.ai/help",
-    tutorialLink: "N/A",
-    githubLink: "N/A",
-  },
-  {
-    id: 13,
-    name: "Napkin AI",
-    rating: 4.8,
-    pricing: "Free",
-    category: ["Educational Technology", "Visual Design"],
-    whatItDoes:
-      "Turns your text into beautiful visual diagrams instantly using AI reasoning.",
-    howToUse: [
-      "Paste your text",
-      "Select visual style",
-      "Generate diagram",
-      "Download SVG/PNG",
-    ],
-    techRelevance: ["Computer Vision", "UI/UX Design"],
-    image:
-      "https://images.unsplash.com/photo-1611224885990-bb7373c2f281?q=80&w=1200&auto=format&fit=crop",
-    officialLink: "https://www.napkin.ai",
-    docLink: "N/A",
-    tutorialLink: "https://youtube.com/tutorial",
-    githubLink: "N/A",
-  },
-];
+
 
 // --- SUB-COMPONENTS ---
 
@@ -123,67 +75,106 @@ const ResourceLink = ({ icon: Icon, label, href }) => {
   );
 };
 
+const timeAgo = (date) => {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+  const intervals = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+  ];
+
+  for (let i of intervals) {
+    const count = Math.floor(seconds / i.seconds);
+    if (count >= 1) {
+      return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
+    }
+  }
+  return "Just now";
+};
+
+
 // --- MAIN PAGE ---
 
 export default function AiToolDetails() {
 
 
-  const { AIToolsData, getAIToolsData, token } = useContext(AIContext)
+  const { getAIToolsData, token, backendUrl } = useContext(AIContext);
+  
 
-  console.log(AIToolsData)
+
+  // const [toolData, setToolData] = useState(null);
+  const [toolData, setToolData] = useState(null);
+  const [AIToolsData, setAiallData] = useState([]);
+
+  useEffect(() => {
+    if (!id || !token) return;
+
+    const AiData = async () => {
+      try {
+        const res = await axios.post(
+          `${backendUrl}/api/user/get-AiTool`,
+          { toolId: id },
+          { headers: { token } },
+        );
+
+        // console.log("API RESPONSE:", res.data);
+        // setAiallData(res.data.data);
+        setToolData(res.data.data);
+
+        setReviews(res.data.data.reviews || []);
+
+      } catch (error) {
+        console.error(error.response?.data || error.message);
+      }
+    };
+
+    AiData();
+  }, [token]);
+
+  // console.log(AIToolsData.reviews)
+
+  // console.log(AIToolsData)
   // console.log(AIToolsData)
   // Demo ke liye hum pehla tool dikha rahe hain, real app mein slug/id se filter hoga
   const tool = AIToolsData;
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [toolData, setToolData] = useState(null);
+
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [userReview, setUserReview] = useState({ rating: 5, comment: "" });
   const navigate = useNavigate();
 
-  console.log(toolData);
-  
+  // console.log(toolData);
 
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      name: "Rahul S.",
-      rating: 5,
-      comment: "Amazing tool! Saved me hours of work.",
-      date: "2 days ago",
-    },
-    {
-      id: 2,
-      name: "Jessica P.",
-      rating: 4,
-      comment: "Very intuitive UI, highly recommended.",
-      date: "1 week ago",
-    },
-  ]);
+  const [reviews, setReviews] = useState([]);
+
+  // console.log(reviews);
+  
 
   const { id } = useParams();
 
-  console.log(id);
-  
+  // console.log(id);
+
+  // useEffect(() => {
+  //   if (AIToolsData && id) {
+  //     const foundTool = AIToolsData.find((tool) => tool._id === id);
+  //     setToolData(foundTool || null);
+  //   }
+  // }, [id, AIToolsData]);
 
   useEffect(() => {
-    if (AIToolsData && id) {
-      const foundTool = AIToolsData.find((tool) => tool._id === id);
-      setToolData(foundTool || null);
-    }
-  }, [id, AIToolsData]);
+    getAIToolsData();
+  }, []);
 
-  useEffect(() => {
-      getAIToolsData();
-    }, []);
-
- if (!toolData) {
-  return (
-    <div className="text-center py-20 text-slate-400 font-bold">
-      Loading tool details...
-    </div>
-  );
-}
-
+  //  if (!toolData) {
+  //   return (
+  //     <div className="text-center py-20 text-slate-400 font-bold">
+  //       Loading tool details...
+  //     </div>
+  //   );
+  // }
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -201,26 +192,43 @@ export default function AiToolDetails() {
       // Fallback: Agar browser share support nahi karta to URL copy ho jayega
       navigator.clipboard.writeText(window.location.href);
       alert(
-        "Link copied to clipboard! (Your browser doesn't support direct sharing)"
+        "Link copied to clipboard! (Your browser doesn't support direct sharing)",
       );
     }
   };
-  const submitReview = (e) => {
-    e.preventDefault();
-    if (!userReview.comment.trim()) return;
+ const submitReview = async (e) => {
+  e.preventDefault();
+  if (!userReview.comment.trim()) return;
 
-    const newEntry = {
-      id: Date.now(),
-      name: "Guest User",
-      rating: userReview.rating,
-      comment: userReview.comment,
-      date: "Just now",
-    };
+  try {
+    const res = await axios.post(
+      `${backendUrl}/api/user/add-review`,
+      {
+        toolId: id,
+        rating: userReview.rating,
+        comment: userReview.comment,
+      },
+      {
+        headers: { token },
+      }
+    );
 
-    setReviews([newEntry, ...reviews]); // Adding to state
-    setUserReview({ rating: 5, comment: "" }); // Reset form
-    setIsReviewOpen(false); // Close form
-  };
+    // ✅ UI instant update
+    setReviews([
+      {
+        ...res.data.review,
+        date: "Just now",
+      },
+      ...reviews,
+    ]);
+
+    setUserReview({ rating: 5, comment: "" });
+    setIsReviewOpen(false);
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20">
@@ -254,8 +262,8 @@ export default function AiToolDetails() {
             <div className="flex flex-col md:flex-row gap-10 relative z-10">
               <div className="w-full md:w-72 h-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
                 <img
-                  src={toolData.image}
-                  alt={toolData.name}
+                  src={toolData?.image}
+                  alt={toolData?.name}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -263,19 +271,19 @@ export default function AiToolDetails() {
               <div className="flex-1 space-y-5">
                 <div className="flex flex-wrap items-center gap-4">
                   <h1 className="text-4xl font-black text-slate-900 dark:text-white leading-none">
-                    {toolData.name}
+                    {toolData?.name}
                   </h1>
                   <div className="flex items-center gap-1.5 bg-amber-400/10 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full border border-amber-200/50">
                     <Star size={16} fill="currentColor" />
                     <span className="text-sm font-black">
-                      {toolData.rating}
+                      {toolData?.rating?.toFixed(1)}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="emerald">{toolData.pricing}</Badge>
-                  {toolData.category.map((cat, i) => (
+                  <Badge variant="emerald">{toolData?.pricing}</Badge>
+                  {toolData?.category.map((cat, i) => (
                     <Badge key={i} variant="indigo">
                       {cat}
                     </Badge>
@@ -284,7 +292,7 @@ export default function AiToolDetails() {
 
                 <div className="flex flex-wrap gap-3 pt-6">
                   <a
-                    href={toolData.officialLink}
+                    href={toolData?.officialLink}
                     target="_blank"
                     className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
                   >
@@ -324,7 +332,7 @@ export default function AiToolDetails() {
               What It Does
             </h2>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg font-medium">
-              {toolData.whatItDoes}
+              {toolData?.whatItDoes}
             </p>
           </section>
 
@@ -332,7 +340,7 @@ export default function AiToolDetails() {
           <section className="space-y-6">
             <h2 className="text-xl font-bold px-2">How to Use</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {toolData.howToUse.map((step, i) => (
+              {toolData?.howToUse.map((step, i) => (
                 <div
                   key={i}
                   className="group flex items-start gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 transition-colors"
@@ -384,7 +392,7 @@ export default function AiToolDetails() {
                       <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>{" "}
                       {con}
                     </li>
-                  )
+                  ),
                 )}
               </ul>
             </div>
@@ -398,7 +406,7 @@ export default function AiToolDetails() {
               Technologies
             </h3>
             <div className="flex flex-wrap gap-2">
-              {tool.techRelevance?.map((tech, i) => (
+              {tool?.techRelevance?.map((tech, i) => (
                 <Badge key={i} variant="slate">
                   {tech}
                 </Badge>
@@ -414,17 +422,17 @@ export default function AiToolDetails() {
             <ResourceLink
               icon={BookOpen}
               label="Docs & API"
-              href={toolData.docLink}
+              href={toolData?.docLink}
             />
             <ResourceLink
               icon={PlayCircle}
               label="Video Tutorials"
-              href={toolData.tutorialLink}
+              href={toolData?.tutorialLink}
             />
             <ResourceLink
               icon={Github}
               label="Source Code"
-              href={toolData.githubLink}
+              href={toolData?.githubLink}
             />
           </section>
 
@@ -496,13 +504,13 @@ export default function AiToolDetails() {
                     <div className="flex justify-between items-start">
                       <h4 className="font-bold">{rev.name}</h4>
                       <span className="text-[10px] text-slate-400 font-bold uppercase">
-                        {rev.date}
+                        {timeAgo(rev.date)}
                       </span>
                     </div>
                     <div className="flex text-amber-400 my-1">
-                      {[...Array(rev.rating)].map((_, i) => (
-                        <Star key={i} size={12} fill="currentColor" />
-                      ))}
+                      {[...Array(Math.floor(rev.rating))].map((_, i) => (
+  <Star key={i} size={12} fill="currentColor" />
+))}
                     </div>
                     <p className="text-slate-600 dark:text-slate-400 text-sm">
                       {rev.comment}
@@ -520,38 +528,41 @@ export default function AiToolDetails() {
       </main>
 
       {/* SIMILAR TOOLS SECTION */}
-<section className="max-w-7xl mx-auto px-6 mt-24">
-  <h2 className="text-2xl font-black mb-10 text-slate-900 dark:text-white">You might also like</h2>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-    {AIToolsData && AIToolsData.slice(0, 4).map((item, i) => (
-      <motion.div 
-        key={item.id || i} 
-        onClick={() => {
-          navigate(`/Ai-Tools/${item._id}`);
-          window.scrollTo({ top: 0, behavior: 'smooth' }); // Page ko upar le jayega smoothly
-        }}
-        whileHover={{ y: -8 }}
-        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] overflow-hidden shadow-sm cursor-pointer hover:shadow-xl transition-all duration-300"
-      >
-        <div className="h-40 overflow-hidden">
-          <img 
-            src={item.image} 
-            alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-          />
+      {/* <section className="max-w-7xl mx-auto px-6 mt-24">
+        <h2 className="text-2xl font-black mb-10 text-slate-900 dark:text-white">
+          You might also like
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {Array.isArray(AIToolsData) &&
+            AIToolsData.slice(0, 4).map((item, i) => (
+              <motion.div
+                key={item.id || i}
+                onClick={() => {
+                  navigate(`/Ai-Tools/${item._id}`);
+                  window.scrollTo({ top: 0, behavior: "smooth" }); // Page ko upar le jayega smoothly
+                }}
+                whileHover={{ y: -8 }}
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] overflow-hidden shadow-sm cursor-pointer hover:shadow-xl transition-all duration-300"
+              >
+                <div className="h-40 overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-5">
+                  <h4 className="font-bold text-lg mb-1 group-hover:text-indigo-600 transition-colors">
+                    {item.name}
+                  </h4>
+                  <div className="flex items-center gap-1 text-xs font-black text-amber-500">
+                    <Star size={14} fill="currentColor" /> {item.rating}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
         </div>
-        <div className="p-5">
-          <h4 className="font-bold text-lg mb-1 group-hover:text-indigo-600 transition-colors">
-            {item.name}
-          </h4>
-          <div className="flex items-center gap-1 text-xs font-black text-amber-500">
-            <Star size={14} fill="currentColor" /> {item.rating}
-          </div>
-        </div>
-      </motion.div>
-    ))}
-  </div>
-</section>
+      </section> */}
     </div>
   );
 }

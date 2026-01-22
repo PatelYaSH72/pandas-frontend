@@ -11,15 +11,6 @@ const TrendingTools = () => {
 
   const navigate = useNavigate()
 
-
-  const tools = [
-    { name: "Claude 3.5", cat: "LLM", img: "C" },
-    { name: "Midjourney", cat: "Design", img: "M" },
-    { name: "Supabase", cat: "Backend", img: "S" },
-    { name: "Vercel AI", cat: "DevTools", img: "V" },
-    { name: "Framers", cat: "No-Code", img: "F" },
-  ];
-
   return (
     <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
       <div className="max-w-7xl mx-auto px-6">
@@ -36,7 +27,7 @@ const TrendingTools = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-1">{tool.name}</h3>
                 <p className="text-slate-500 text-sm mb-4">{tool.category[0]}</p>
-                <div onClick={()=>navigate(`/Ai-Tools/${tool.id}`)} className="flex items-center text-indigo-600 font-medium text-sm group-hover:gap-2 transition-all cursor-pointer">
+                <div onClick={()=>navigate(`/Ai-Tools/${tool._id}`)} className="flex items-center text-indigo-600 font-medium text-sm group-hover:gap-2 transition-all cursor-pointer">
                   View Details <ArrowRight size={16} />
                 </div>
               </Card>

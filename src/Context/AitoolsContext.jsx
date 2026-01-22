@@ -22,15 +22,21 @@ export const AiProvider = ({ children }) => {
     setAIToolsData(data.data)
     
 
-    console.log(AIToolsData);
+    
     
    
   };
 
+   useEffect(() => {
+  if (!token) return;
+  getAIToolsData();
+}, [token]);
+
   const value = {
     AIToolsData,
     getAIToolsData,
-    token
+    token,
+    backendUrl
   };
   // console.log(TechnologyesData)
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;

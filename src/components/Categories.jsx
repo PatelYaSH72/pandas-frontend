@@ -23,7 +23,7 @@ const Categories = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {Technologyes_Data.slice(0, 6).map((cat, i) => {
+        {Technologyes_Data?.slice(0, 6).map((cat, i) => {
           const IconComponent = Icons[cat.icon] || Icons.HelpCircle;
 
           return (

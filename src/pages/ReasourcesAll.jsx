@@ -14,32 +14,49 @@ import ResourceList from "../components/ResourceList";
 import { useNavigate } from "react-router";
 import { MyContext } from "../Context/RsourcesContext";
 import { useParams } from "react-router";
+import axios from "axios";
 
 /* ================= COMPONENT ================= */
 export default function ReasourcesAll() {
+  const { slug } = useParams();
 
-  const {slug} = useParams()
-
-  const [resorceData, SetResorceData] = useState(null)
+  const [resorceData, SetResorceData] = useState(null);
 
   console.log(slug);
-  
 
-  const {Technologyes_Data} = useContext(MyContext)
-
-  const technologyData = Technologyes_Data?.find(
-  (item) => item.slug === slug
-);
+  const { Technologyes_Data, token, backendUrl } = useContext(MyContext);
 
   useEffect(() => {
-  const technologyData = Technologyes_Data?.find((item) => item.slug === slug);
-  if (technologyData) {
-    SetResorceData(technologyData);
-  }
-}, [slug, Technologyes_Data]);
+    const technologyData = Technologyes_Data?.find(
+      (item) => item.slug === slug,
+    );
+    if (technologyData) {
+      SetResorceData(technologyData);
+    }
+  }, [slug, Technologyes_Data]);
 
-  console.log(Technologyes_Data[0].category);
-  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/user/resources-tool/${slug}`, {
+          headers: { token: token },
+        });
+
+        console.log(res.data.data); // yahan state set karo
+
+        SetResorceData(res.data.data)
+
+      } catch (error) {
+        console.error(error.response?.data || error.message);
+      }
+    };
+
+    if (slug && token) {
+      fetchData();
+    }
+  }, [slug, token]);
+
+  // console.log(Technologyes_Data[0].category);
 
   const [bookmarked, setBookmarked] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -47,9 +64,7 @@ export default function ReasourcesAll() {
   const [level, setLevel] = useState("beginner");
   const data = resorceData?.learningRoadmapData?.[level];
   const navigate = useNavigate();
- const stepData = resorceData?.detailedStepByStepLearning?.[level];
-
-
+  const stepData = resorceData?.detailedStepByStepLearning?.[level];
 
   //  ----- slug req me jayega slug se data aayega ohk -----
   // console.log(learningRoadmapData)
@@ -170,7 +185,7 @@ export default function ReasourcesAll() {
                     key={cat.name}
                     className="px-3 py-1 rounded-full bg-green-100 text-green-600 cursor-pointer hover:bg-green-200 hover:text-green-700 transition"
                   >
-                    {cat.label} 
+                    {cat.label}
                   </span>
                 ))}
                 <button
@@ -409,35 +424,35 @@ export default function ReasourcesAll() {
               </section>
 
               {/* STEP BY STEP LEARNING */}
-             {stepData && (
-  <section className="space-y-6">
-    <h4 className="text-xl font-semibold flex items-center gap-2">
-      🪜 Step-by-Step Learning (Detailed)
-    </h4>
+              {stepData && (
+                <section className="space-y-6">
+                  <h4 className="text-xl font-semibold flex items-center gap-2">
+                    🪜 Step-by-Step Learning (Detailed)
+                  </h4>
 
-    {stepData.map((step, i) => (
-      <details
-        key={i}
-        className="group rounded-2xl bg-indigo-50 dark:bg-slate-800 p-5"
-      >
-        <summary className="cursor-pointer flex items-center justify-between font-semibold text-indigo-700 dark:text-indigo-300">
-          <span>
-            Step {step.step}: {step.title}
-          </span>
-          <span className="group-open:rotate-180 transition">⬇️</span>
-        </summary>
+                  {stepData.map((step, i) => (
+                    <details
+                      key={i}
+                      className="group rounded-2xl bg-indigo-50 dark:bg-slate-800 p-5"
+                    >
+                      <summary className="cursor-pointer flex items-center justify-between font-semibold text-indigo-700 dark:text-indigo-300">
+                        <span>
+                          Step {step.step}: {step.title}
+                        </span>
+                        <span className="group-open:rotate-180 transition">
+                          ⬇️
+                        </span>
+                      </summary>
 
-        <ul className="mt-4 pl-6 space-y-2 list-disc text-slate-700 dark:text-slate-300">
-          {step.details.map((d, idx) => (
-            <li key={idx}>{d}</li>
-          ))}
-        </ul>
-      </details>
-    ))}
-  </section>
-)}
-
-
+                      <ul className="mt-4 pl-6 space-y-2 list-disc text-slate-700 dark:text-slate-300">
+                        {step.details.map((d, idx) => (
+                          <li key={idx}>{d}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  ))}
+                </section>
+              )}
 
               {/* AI TOOLS */}
               <section className="space-y-4">

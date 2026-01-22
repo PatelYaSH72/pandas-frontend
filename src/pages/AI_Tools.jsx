@@ -68,39 +68,42 @@ const ToolCard = ({ tool }) => (
 // --- MAIN PAGE ---
 
 export default function Ai_Tools() {
+
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [isScrolled, setIsScrolled] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+
   const navigate = useNavigate();
+  const { AIToolsData } = useContext(AIContext);
 
-  const { AIToolsData, getAIToolsData, token } = useContext(AIContext)
-
-  
-  
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    getAIToolsData();
-  }, []);
-
-
+  // ✅ useMemo HAMESHA upar
   const filteredTools = useMemo(() => {
+    if (!Array.isArray(AIToolsData)) return [];
+
     return AIToolsData.filter(tool => {
-      const matchesSearch = tool.name.toLowerCase().includes(search.toLowerCase());
-      
-      // Logic adjusted for Category Array
-      const matchesCat = activeCategory === "All" || 
-                         tool.category.some(cat => cat.includes(activeCategory));
-      
+      const matchesSearch = tool.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchesCat =
+        activeCategory === "All" ||
+        tool.category?.some(cat => cat.includes(activeCategory));
+
       return matchesSearch && matchesCat;
     });
-  }, [search, activeCategory]);
+  }, [AIToolsData, search, activeCategory]);
+
+  // ✅ return baad me
+  if (!AIToolsData || AIToolsData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400 font-bold">
+        Loading AI Tools...
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
