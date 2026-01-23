@@ -15,6 +15,7 @@ import Login_signup from "./pages/Login_signup";
 import UserDashboard from "./pages/UserDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Bookmarks from "./pages/Bookmarks";
 
 const App = () => {
   return (
@@ -36,6 +37,7 @@ const App = () => {
         <Route path="/Deshboard" element={<UserDashboard />} />
         <Route path="/About" element={<About />} />
         <Route path="/Contact" element={<Contact />} />
+        <Route path="/Bookmarks" element={<Bookmarks />} />
       </Routes>
     </BrowserRouter>
     </AiProvider>

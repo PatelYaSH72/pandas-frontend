@@ -113,6 +113,7 @@ export default function AiToolDetails() {
   const [isFavorite, setIsFavorite] = useState(false);
 const [isSaved, setIsSaved] = useState(false);
 
+
 const toggleFavorite = async () => {
   try {
     const res = await axios.post(

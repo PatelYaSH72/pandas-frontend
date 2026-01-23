@@ -1,19 +1,6 @@
 import React, { useContext, useState } from "react";
 import {
-  Search,
-  Code,
-  Brain,
-  Database,
-  Smartphone,
-  Palette,
-  ShieldCheck,
-  ArrowRight,
-  Plus,
-  Github,
-  Twitter,
-  ExternalLink,
-  TrendingUp,
-  LogIn,
+
   UserPlus,
   User,
   Info,
@@ -25,6 +12,7 @@ import {
   Heart,
   Settings,
   LogOut,
+  BookmarkCheck,
 } from "lucide-react";
 import { UserContext } from "../Context/UserContext";
 import { Link, useNavigate } from "react-router";
@@ -138,11 +126,8 @@ const Navbar = () => {
                     >
                       <LayoutDashboard size={18} /> Dashboard
                     </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all">
-                      <Heart size={18} /> Favorites
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all">
-                      <Settings size={18} /> Settings
+                    <button onClick={() => navigate("/BookMarks")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all">
+                      <BookmarkCheck  size={18} /> BookMarks
                     </button>
                   </div>
                   <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>

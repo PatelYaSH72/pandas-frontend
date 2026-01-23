@@ -156,7 +156,7 @@ export default function ReasourcesAll() {
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="flex items-center mb-8">
             <button
-              onClick={() => navigate("/Resources")}
+              onClick={() => navigate(-1)}
               className="flex items-center gap-2 text-sm font-semibold
                text-slate-600 dark:text-slate-300
                hover:text-indigo-600 transition-all"

@@ -18,6 +18,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
+import { useContext } from "react";
+import { AIContext } from "../Context/AitoolsContext";
+import axios from "axios";
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("saved");
@@ -26,21 +30,69 @@ const UserDashboard = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
 
-  
-  
+  const { getAIToolsData, token, backendUrl } = useContext(AIContext);
+
+  const [loading, setLoading] = useState(true);
+
+  const submittedTool = [{ id: 1, name: "", status: "", date: "" }];
+
+  const navigate = useNavigate()
+
+  const savedTool = [
+    {
+      id: 101,
+      name: "",
+      category: "",
+      image: "",
+    },
+  ];
+
+  // Join Date → "Jan 2024"
+  const formatJoinedDate = (dateString) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Submitted Date → "2 hours ago"
+  const timeAgo = (dateString) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const seconds = Math.floor((now - past) / 1000);
+
+    const intervals = [
+      { label: "year", seconds: 31536000 },
+      { label: "month", seconds: 2592000 },
+      { label: "week", seconds: 604800 },
+      { label: "day", seconds: 86400 },
+      { label: "hour", seconds: 3600 },
+      { label: "minute", seconds: 60 },
+    ];
+
+    for (const i of intervals) {
+      const count = Math.floor(seconds / i.seconds);
+      if (count >= 1) {
+        return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
+      }
+    }
+
+    return "Just now";
+  };
 
   // 1. User State (Editable)
   const [userData, setUserData] = useState({
-    name: "Alex Panda",
-    email: "alex@pandas.ai",
-    joined: "Jan 2024",
-    avatar:
-      "https://img.freepik.com/premium-vector/round-man-character-mockup-icon-flat-color-round-man-icon-blue-tshirt-brown-hair-character-template-vector-icon_774778-2418.jpg?semt=ais_hybrid&w=740&q=80",
-    totalSaved: 12,
-    totalSubmitted: 5,
+    name: "",
+    email: "",
+    joined: "",
+    avatar:"",
+    totalSaved: null,
+    totalSubmitted: null,
+    submittedTools: submittedTool,
+    savedTools: savedTool,
   });
-
-  console.log(userData);
 
   const [tempData, setTempData] = useState({ ...userData });
 
@@ -48,6 +100,38 @@ const UserDashboard = () => {
     const { name, value } = e.target;
     setTempData((prev) => ({ ...prev, [name]: value }));
   };
+  const fetchDashboardData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/user/dashBoradData", {
+        headers: {
+          token: token, // 🔐 token
+        },
+      });
+
+      if (data.success) {
+        setUserData(data);
+        setTempData(data);
+      }
+    } catch (error) {
+      console.error(
+        "Dashboard API Error:",
+        error.response?.data?.message || error.message,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(userData);
+  
+
+  useEffect(() => {
+    if (token) {
+      fetchDashboardData();
+    }
+  }, [token]);
+
+  
 
   // Save Logic
   const handleSave = async () => {
@@ -55,61 +139,45 @@ const UserDashboard = () => {
 
     formData.append("name", tempData.name);
     formData.append("email", tempData.email);
-    formData.append("role", tempData.role);
+    
 
     if (selectedImage) {
-      formData.append("avatar", selectedImage);
+      formData.append("image", selectedImage);
     }
 
     console.log("Sending to backend:", [...formData.entries()]);
 
-    // 👉 Yaha API call aayega (axios / fetch)
-    // await axios.put("/api/user/update-profile", formData, {
-    //   headers: { "Content-Type": "multipart/form-data" }
-    // });
+    await axios.put(backendUrl +"/api/user/upate-data", formData, {
+        headers: {
+          token:token
+        },
+      });
 
     // TEMP: frontend sync
-    setUserData((prev) => ({
-      ...prev,
-      ...tempData,
-      avatar: selectedImage ? URL.createObjectURL(selectedImage) : prev.avatar,
-    }));
+    setUserData((prev) => {
+      const updated = {
+        ...prev,
+        ...tempData,
+        avatar: selectedImage
+          ? URL.createObjectURL(selectedImage)
+          : prev.avatar,
+      };
+
+      setTempData(updated); // 🔥 sync
+      return updated;
+    });
 
     setIsEditMode(false);
+
+    fetchDashboardData()
   };
+
 
   // Cancel Logic
   const handleCancel = () => {
     setTempData({ ...userData }); // Purana data wapas reset
     setIsEditMode(false);
   };
-
-  const submittedTools = [
-    { id: 1, name: "GPT Optimizer", status: "Approved", date: "2 days ago" },
-    { id: 2, name: "DataViz Pro", status: "Pending", date: "5 hours ago" },
-    { id: 3, name: "CodeFast AI", status: "Rejected", date: "1 week ago" },
-  ];
-
-  const savedTools = [
-    {
-      id: 101,
-      name: "Vercel SDK",
-      category: "Deployment",
-      image: "https://api.dicebear.com/7.x/shapes/svg?seed=1",
-    },
-    {
-      id: 102,
-      name: "Midjourney API",
-      category: "Generative AI",
-      image: "https://api.dicebear.com/7.x/shapes/svg?seed=2",
-    },
-    {
-      id: 103,
-      name: "Tailwind Master",
-      category: "CSS Tool",
-      image: "https://api.dicebear.com/7.x/shapes/svg?seed=3",
-    },
-  ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -125,7 +193,7 @@ const UserDashboard = () => {
   };
 
   // Reusable Editable Text Component
-  const navigate = useNavigate();
+
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-4 md:p-8 pt-24 transition-colors duration-500">
@@ -149,7 +217,7 @@ const UserDashboard = () => {
                     src={
                       selectedImage
                         ? URL.createObjectURL(selectedImage)
-                        : userData.avatar
+                        : userData?.image
                     }
                     alt="avatar"
                     className="w-full h-full object-cover"
@@ -223,41 +291,44 @@ const UserDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center space-y-1">
-                    <h2 className="text-xl font-black">{userData.name}</h2>
+                    <h2 className="text-xl font-black">{userData?.name}</h2>
                     <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest">
-                      {userData.role}
+                      {userData?.role}
                     </p>
-                    <p className="text-sm text-slate-500">{userData.email}</p>
+                    <p className="text-sm text-slate-500">{userData?.email}</p>
                   </div>
                 )}
               </div>
 
               {/* --- USER STATS --- */}
-<div className="w-full mt-6 grid grid-cols-3 gap-3 text-center">
-  
-  <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
-    <p className="text-xs text-slate-400 font-bold uppercase">Joined</p>
-    <p className="text-sm font-black text-slate-900 dark:text-white">
-      {userData.joined}
-    </p>
-  </div>
+              <div className="w-full mt-6 grid grid-cols-3 gap-3 text-center">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
+                  <p className="text-xs text-slate-400 font-bold uppercase">
+                    Joined
+                  </p>
+                  <p className="text-sm font-black text-slate-900 dark:text-white">
+                    {formatJoinedDate(userData?.joined)}
+                  </p>
+                </div>
 
-  <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
-    <p className="text-xs text-slate-400 font-bold uppercase">Saved</p>
-    <p className="text-sm font-black text-indigo-600">
-      {userData.totalSaved}
-    </p>
-  </div>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
+                  <p className="text-xs text-slate-400 font-bold uppercase">
+                    Saved
+                  </p>
+                  <p className="text-sm font-black text-indigo-600">
+                    {userData?.totalSaved}
+                  </p>
+                </div>
 
-  <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
-    <p className="text-xs text-slate-400 font-bold uppercase">Submitted</p>
-    <p className="text-sm font-black text-emerald-600">
-      {userData.totalSubmitted}
-    </p>
-  </div>
-
-</div>
-
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl py-3">
+                  <p className="text-xs text-slate-400 font-bold uppercase">
+                    Submitted
+                  </p>
+                  <p className="text-sm font-black text-emerald-600">
+                    {userData?.totalSubmitted}
+                  </p>
+                </div>
+              </div>
 
               {/* Control Buttons */}
               <div className="w-full mt-8">
@@ -278,7 +349,10 @@ const UserDashboard = () => {
                   </div>
                 ) : (
                   <button
-                    onClick={() => setIsEditMode(true)}
+                    onClick={() => {
+                      setTempData(userData); // 🔥 current data copy
+                      setIsEditMode(true);
+                    }}
                     className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-xl"
                   >
                     <Pencil size={14} /> Edit Profile
@@ -323,7 +397,7 @@ const UserDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AnimatePresence mode="wait">
               {activeTab === "saved" ? (
-                savedTools.map((tool, i) => (
+                userData?.savedTools.map((tool, i) => (
                   <motion.div
                     key={tool.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -346,14 +420,14 @@ const UserDashboard = () => {
                         </p>
                       </div>
                       <button className="p-2 text-slate-400 hover:text-indigo-600">
-                        <ExternalLink size={18} />
+                        <ExternalLink size={18} onClick={() =>navigate(`/Ai-tools/${tool.id}`)}/>
                       </button>
                     </div>
                   </motion.div>
                 ))
               ) : (
                 <div className="col-span-full space-y-4">
-                  {submittedTools.map((tool, i) => (
+                  {userData?.submittedTools.map((tool, i) => (
                     <motion.div
                       key={tool.id}
                       initial={{ opacity: 0, x: 20 }}
@@ -368,7 +442,7 @@ const UserDashboard = () => {
                         <div>
                           <h3 className="font-bold">{tool.name}</h3>
                           <p className="text-xs text-slate-400 font-medium">
-                            Submitted {tool.date}
+                            Submitted {timeAgo(tool.date)}
                           </p>
                         </div>
                       </div>
