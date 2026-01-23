@@ -70,18 +70,26 @@ export default function ReasourcesAll() {
   // console.log(learningRoadmapData)
 
   useEffect(() => {
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    setBookmarked(bookmarks.includes(resorceData?.id));
-  }, []);
+  if (!resorceData?._id) return;
+
+  const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+  setBookmarked(bookmarks.includes(resorceData._id));
+}, [resorceData]);
+
 
   const toggleBookmark = () => {
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    const updated = bookmarked
-      ? bookmarks.filter((id) => id !== resorceData?.id)
-      : [...bookmarks, resorceData?.id];
-    localStorage.setItem("bookmarks", JSON.stringify(updated));
-    setBookmarked(!bookmarked);
-  };
+  if (!resorceData?._id) return;
+
+  const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+
+  const updated = bookmarked
+    ? bookmarks.filter((id) => id !== resorceData._id)
+    : [...bookmarks, resorceData._id];
+
+  localStorage.setItem("bookmarks", JSON.stringify(updated));
+  setBookmarked(!bookmarked);
+};
+
 
   const copyPrompt = (text) => {
     navigator.clipboard.writeText(text);

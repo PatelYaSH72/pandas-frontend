@@ -161,7 +161,7 @@ const CategoryFull = () => {
           <AnimatePresence mode="popLayout">
             {filteredTools?.map((tool) => (
               <motion.div
-                key={tool.id}
+                key={tool._id}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -200,7 +200,7 @@ const CategoryFull = () => {
                       </span>
                     </div>
                     <Link
-                      to={`/Ai-Tools/${tool.id}`}
+                      to={`/Ai-Tools/${tool._id}`}
                       className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2 text-slate-100"
                     >
                       Detail <ExternalLink size={12} />

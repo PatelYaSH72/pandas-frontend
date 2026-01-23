@@ -39,6 +39,9 @@ const Navbar = () => {
   const { isLoggedIn, setIsLoggedIn, userData, setToken } =
     useContext(UserContext);
 
+    console.log(userData.image);
+    
+
   const handleLogout = () => {
     setToken("");
     setIsLoggedIn(false);
@@ -104,9 +107,9 @@ const Navbar = () => {
                   <span className="text-xs font-black tracking-tight">
                     {userData.name}
                   </span>
-                  <span className="text-[9px] text-indigo-500 font-black uppercase tracking-tighter">
+                  {/* <span className="text-[9px] text-indigo-500 font-black uppercase tracking-tighter">
                     Developer
-                  </span>
+                  </span> */}
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg">
                   <User size={18} />

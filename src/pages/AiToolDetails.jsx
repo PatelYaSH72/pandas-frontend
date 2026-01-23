@@ -426,7 +426,7 @@ const toggleSave = async () => {
               Technologies
             </h3>
             <div className="flex flex-wrap gap-2">
-              {tool?.techRelevance?.map((tech, i) => (
+              {toolData?.techRelevance.map((tech, i) => (
                 <Badge key={i} variant="slate">
                   {tech}
                 </Badge>
@@ -458,7 +458,15 @@ const toggleSave = async () => {
 
           <section className="space-y-6">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-2xl font-black">User Reviews</h2>
+              <h2 className="text-2xl font-black flex items-center gap-2">
+  User Reviews
+  <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-black px-2 py-1 rounded-full">
+ {reviews?.length || 0}
+
+</span>
+
+</h2>
+
               <button
                 onClick={() => setIsReviewOpen(!isReviewOpen)}
                 className="text-sm font-bold text-indigo-600 hover:underline"

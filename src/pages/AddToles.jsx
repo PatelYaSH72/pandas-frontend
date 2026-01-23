@@ -25,12 +25,18 @@ import {
   Star,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useContext } from "react";
+import { AIContext } from "../Context/AitoolsContext";
+import axios from "axios";
 
 const AddToles = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+    const { token, backendUrl } = useContext(AIContext);
+
 
   const aiCategoriesList = [
     "Information Technology",
@@ -71,7 +77,7 @@ const AddToles = () => {
     whatItDoes: "",
     howToUse: [""],
     techRelevance: [""],
-    image: "",
+    image: "" || "https://img.freepik.com/free-vector/robotic-artificial-intelligence-technology-smart-lerning-from-bigdata_1150-48136.jpg?semt=ais_hybrid&w=740&q=80",
     officialLink: "",
     docLink: "",
     tutorialLink: "",
@@ -157,15 +163,25 @@ const AddToles = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    console.log(formData)
-    e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowSuccess(true);
-    }, 2000);
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    const res = await axios.post(`${backendUrl}/api/user/submit`, formData, {
+      headers: { token: token },
+    });
+
+    console.log("Backend Response:", res.data);
+    setShowSuccess(true);
+  } catch (err) {
+    console.error("Request failed:", err.response?.data || err.message);
+    alert("Error submitting tool! Check console.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const Label = ({ children, icon: Icon }) => (
     <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2 ml-1">
