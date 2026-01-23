@@ -15,6 +15,7 @@ import {
   Share2,
   Flag,
   Info,
+  Save,
 } from "lucide-react";
 import { AIContext } from "../Context/AitoolsContext";
 import { Link, useNavigate, useParams } from "react-router";
@@ -109,6 +110,40 @@ export default function AiToolDetails() {
   const [toolData, setToolData] = useState(null);
   const [AIToolsData, setAiallData] = useState([]);
 
+  const [isFavorite, setIsFavorite] = useState(false);
+const [isSaved, setIsSaved] = useState(false);
+
+const toggleFavorite = async () => {
+  try {
+    const res = await axios.post(
+      `${backendUrl}/api/user/toggle-favorite`,
+      { toolId: id },
+      { headers: { token: token } }
+    );
+
+    setIsFavorite(res.data.isFavorite);
+
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+  }
+};
+
+const toggleSave = async () => {
+  try {
+    const res = await axios.post(
+      `${backendUrl}/api/user/toggle-save`,
+      { toolId: id },
+      { headers: { token: token } }
+    );
+
+    setIsSaved(res.data.isSaved);
+
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+  }
+};
+
+
   useEffect(() => {
     if (!id || !token) return;
 
@@ -126,6 +161,9 @@ export default function AiToolDetails() {
 
         setReviews(res.data.data.reviews || []);
 
+        setIsFavorite(res.data.data.isFavorite || false);
+      setIsSaved(res.data.data.isSaved || false);
+
       } catch (error) {
         console.error(error.response?.data || error.message);
       }
@@ -134,47 +172,20 @@ export default function AiToolDetails() {
     AiData();
   }, [token]);
 
-  // console.log(AIToolsData.reviews)
-
-  // console.log(AIToolsData)
-  // console.log(AIToolsData)
-  // Demo ke liye hum pehla tool dikha rahe hain, real app mein slug/id se filter hoga
+  
   const tool = AIToolsData;
-  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [userReview, setUserReview] = useState({ rating: 5, comment: "" });
   const navigate = useNavigate();
 
-  // console.log(toolData);
-
   const [reviews, setReviews] = useState([]);
 
-  // console.log(reviews);
-  
-
   const { id } = useParams();
-
-  // console.log(id);
-
-  // useEffect(() => {
-  //   if (AIToolsData && id) {
-  //     const foundTool = AIToolsData.find((tool) => tool._id === id);
-  //     setToolData(foundTool || null);
-  //   }
-  // }, [id, AIToolsData]);
 
   useEffect(() => {
     getAIToolsData();
   }, []);
-
-  //  if (!toolData) {
-  //   return (
-  //     <div className="text-center py-20 text-slate-400 font-bold">
-  //       Loading tool details...
-  //     </div>
-  //   );
-  // }
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -299,18 +310,27 @@ export default function AiToolDetails() {
                     Visit Website <ExternalLink size={20} />
                   </a>
                   <button
-                    onClick={() => setIsBookmarked(!isBookmarked)}
-                    className={`p-4 rounded-2xl border transition-all active:scale-90 ${
-                      isBookmarked
-                        ? "bg-pink-50 border-pink-200 text-pink-500 shadow-lg shadow-pink-200/50"
-                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400"
-                    }`}
-                  >
-                    <Heart
-                      size={24}
-                      fill={isBookmarked ? "currentColor" : "none"}
-                    />
-                  </button>
+  onClick={toggleFavorite}
+  className={`p-4 rounded-2xl border transition-all ${
+    isFavorite
+      ? "bg-pink-50 border-pink-300 text-pink-500"
+      : "bg-white border-slate-300 text-slate-400"
+  }`}
+>
+  <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
+</button>
+
+                  <button
+  onClick={toggleSave}
+  className={`p-4 rounded-2xl border transition-all ${
+    isSaved
+      ? "bg-indigo-50 border-indigo-300 text-indigo-600"
+      : "bg-white border-slate-300 text-slate-400"
+  }`}
+>
+  <Save size={24} fill={isSaved ? "currentColor" : "none"} />
+</button>
+
                   <button
                     onClick={handleShare}
                     title="Share this tool"
