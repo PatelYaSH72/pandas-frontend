@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { useContext } from "react";
 import { AIContext } from "../Context/AitoolsContext";
 import axios from "axios";
+import { UserContext } from "../Context/UserContext";
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("saved");
@@ -30,7 +31,9 @@ const UserDashboard = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const { getAIToolsData, token, backendUrl } = useContext(AIContext);
+  const { getAIToolsData, token, backendUrl,} = useContext(AIContext);
+
+  const { getUserData } = useContext(UserContext)
 
   const [loading, setLoading] = useState(true);
 
@@ -153,6 +156,10 @@ const UserDashboard = () => {
         },
       });
 
+      await getUserData()
+
+
+
     // TEMP: frontend sync
     setUserData((prev) => {
       const updated = {
@@ -167,10 +174,16 @@ const UserDashboard = () => {
       return updated;
     });
 
+    
+
     setIsEditMode(false);
 
     fetchDashboardData()
+
+     
   };
+
+
 
 
   // Cancel Logic
@@ -196,10 +209,10 @@ const UserDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-4 md:p-8 pt-24 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-4 md:p-8  transition-colors duration-500 pt-[120px] ">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm"
+        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-15"
       >
         <ArrowLeft size={18} /> Back
       </button>

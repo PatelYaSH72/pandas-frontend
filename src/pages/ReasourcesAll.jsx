@@ -90,6 +90,10 @@ export default function ReasourcesAll() {
   setBookmarked(!bookmarked);
 };
 
+useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   const copyPrompt = (text) => {
     navigator.clipboard.writeText(text);
@@ -109,48 +113,13 @@ export default function ReasourcesAll() {
   }, []);
 
   return (
-    <div className={`${darkMode ? "dark" : ""} transition-colors duration-500`}>
+    <div className={`${darkMode ? "dark" : ""} transition-colors  dark:bg-slate-900 duration-500 pt-10`}>
       {/* TOC Floating */}
 
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="fixed top-20 left-5 hidden md:block z-50"
-      >
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border shadow-lg space-y-2 w-40">
-          <h4 className="font-bold mb-2 text-indigo-600">Contents</h4>
-          {[
-            "hero",
-            "how-to-use",
-            "roadmap",
-            "related-tools",
-            "resources",
-            "use-cases",
-            "reviews",
-          ].map((id) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              className={`block text-sm hover:text-green-500 flex items-center gap-1 transition-colors ${
-                activeTOC === id
-                  ? "text-green-500 font-semibold"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <ChevronRight size={14} /> {id.replace("-", " ").toUpperCase()}
-            </a>
-          ))}
-        </div>
-      </motion.div>
+      
 
       {/* Dark Mode Toggle */}
-      <div
-        className="fixed top-5 right-5 flex items-center gap-2 p-2 bg-white dark:bg-slate-900 rounded-2xl shadow-lg cursor-pointer z-50 transition"
-        onClick={() => setDarkMode(!darkMode)}
-      >
-        <Menu size={20} className="text-indigo-600" />
-        <span className="text-sm">{darkMode ? "Light Mode" : "Dark Mode"}</span>
-      </div>
+      
 
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 px-6 py-14">
         <div className="max-w-6xl mx-auto space-y-16">

@@ -16,6 +16,7 @@ import UserDashboard from "./pages/UserDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Bookmarks from "./pages/Bookmarks";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
     <MyProvider>
       <AiProvider>
     <BrowserRouter>
+        <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Ai-Tools" element={<Ai_Tools />} />

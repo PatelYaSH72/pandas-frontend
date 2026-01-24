@@ -22,12 +22,12 @@ const Compare = () => {
     setAIData(AIToolsData)
   },[AIToolsData])
 
-  const toggleTool = (id) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter(item => item !== id));
+  const toggleTool = (_id) => {
+    if (selectedIds.includes(_id)) {
+      setSelectedIds(selectedIds.filter(item => item !== _id));
     } else {
       if (selectedIds.length < 4) {
-        setSelectedIds([...selectedIds, id]);
+        setSelectedIds([...selectedIds, _id]);
         setSearchQuery("");
       } else {
         alert("Max 4 tools allowed");
@@ -35,17 +35,17 @@ const Compare = () => {
     }
   };
 
-  const selectedTools = AiData?.filter(tool => selectedIds.includes(tool.id));
+  const selectedTools = AiData?.filter(tool => selectedIds.includes(tool._id));
   
   const searchResults = searchQuery.length > 1 
     ? AiData?.filter(tool => 
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !selectedIds.includes(tool.id)
+        !selectedIds.includes(tool._id)
       ).slice(0, 5) 
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pt-10">
       
       {/* --- Top Section --- */}
       <section className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
@@ -92,8 +92,8 @@ const Compare = () => {
               >
                 {searchResults.map(tool => (
                   <button 
-                    key={tool.id}
-                    onClick={() => toggleTool(tool.id)}
+                    key={tool._id}
+                    onClick={() => toggleTool(tool._id)}
                     className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
                   >
                     <img src={tool.image} alt={tool.name} className="w-10 h-10 rounded-lg object-cover bg-slate-200" />
@@ -112,9 +112,9 @@ const Compare = () => {
         {/* --- Active Selection Pills --- */}
         <div className="flex flex-wrap justify-center gap-3 mt-8">
           {selectedTools?.map(tool => (
-            <div key={tool.id} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full shadow-md text-sm font-semibold">
+            <div key={tool._id} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full shadow-md text-sm font-semibold">
               {tool.name}
-              <button onClick={() => toggleTool(tool.id)} className="hover:bg-indigo-500 rounded-full p-0.5">
+              <button onClick={() => toggleTool(tool._id)} className="hover:bg-indigo-500 rounded-full p-0.5">
                 <X size={14} />
               </button>
             </div>
@@ -147,7 +147,7 @@ const Compare = () => {
                       <div className="relative inline-block mb-4">
                         <img src={tool.image} alt="" className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover shadow-md mx-auto" />
                         <button 
-                          onClick={() => toggleTool(tool.id)}
+                          onClick={() => toggleTool(tool._id)}
                           className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"
                         >
                           <X size={12} />
@@ -187,7 +187,7 @@ const Compare = () => {
                 <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                   <td className="sticky left-0 z-10 p-6 font-bold text-sm bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">Categories</td>
                   {selectedTools.map(tool => (
-                    <td key={tool.id} className="p-6 text-center">
+                    <td key={tool._id} className="p-6 text-center">
                       <div className="flex flex-wrap justify-center gap-2">
                         {tool.category.slice(0, 2).map(cat => (
                           <span key={cat} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-semibold text-slate-500">
@@ -203,10 +203,10 @@ const Compare = () => {
                 <tr className="bg-slate-50/30 dark:bg-slate-800/10">
                   <td className="sticky left-0 z-10 p-6 font-bold text-sm bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 italic">Action</td>
                   {selectedTools.map(tool => (
-                    <td key={tool.id} className="p-8 text-center">
+                    <td key={tool._id} className="p-8 text-center">
                       <div 
 
-                        onClick={()=>navigate(`/Ai-tools/${tool.id}`)} 
+                        onClick={()=>navigate(`/Ai-tools/${tool._id}`)} 
                         rel="noreferrer"
                         className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all inline-flex items-center gap-2 shadow-lg shadow-indigo-200 dark:shadow-none cursor-pointer"
                       >

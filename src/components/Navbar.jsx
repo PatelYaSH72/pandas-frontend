@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Menu,
   X,
+  Home,
   ChevronDown,
   LayoutDashboard,
   Heart,
@@ -27,18 +28,18 @@ const Navbar = () => {
   const { isLoggedIn, setIsLoggedIn, userData, setToken } =
     useContext(UserContext);
 
-    console.log(userData.image);
+    console.log(userData.name);
     
 
   const handleLogout = () => {
     setToken("");
     setIsLoggedIn(false);
     setShowProfileMenu(false);
-    navigate("/");
+    // navigate("/");
   };
 
   return (
-    <nav className="fixed w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
+    <nav className="fixed w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 z-100 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         {/* 1. Logo Section */}
         <div className="flex items-center gap-2 group cursor-pointer shrink-0">
@@ -63,6 +64,12 @@ const Navbar = () => {
             className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
           >
             <MessageSquare size={16} /> Contact
+          </Link>
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+          >
+            <Home  size={16} /> Home
           </Link>
         </div>
 
@@ -91,7 +98,7 @@ const Navbar = () => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5 sm:pl-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-indigo-500/50 transition-all"
               >
-                <div className="flex flex-col items-end hidden md:block">
+                <div className="flex flex-col items-end hidden md:block text-slate-200">
                   <span className="text-xs font-black tracking-tight">
                     {userData.name}
                   </span>
@@ -100,7 +107,7 @@ const Navbar = () => {
                   </span> */}
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <User size={18} />
+                  <img src={userData.image} className="w-full h-full rounded-md bg-cover" alt="" />
                 </div>
                 <ChevronDown
                   size={14}
@@ -115,18 +122,18 @@ const Navbar = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
                       Signed in as
                     </p>
-                    <p className="text-sm font-bold truncate">
+                    <p className="text-sm font-bold truncate  text-slate-200">
                       {userData.email}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <button
-                      onClick={() => navigate("/Deshboard")}
+                      onClick={() => {navigate("/Deshboard"); setShowProfileMenu(false);}}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all"
                     >
                       <LayoutDashboard size={18} /> Dashboard
                     </button>
-                    <button onClick={() => navigate("/BookMarks")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all">
+                    <button onClick={() => {navigate("/BookMarks"); setShowProfileMenu(false);}} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 rounded-xl transition-all">
                       <BookmarkCheck  size={18} /> BookMarks
                     </button>
                   </div>

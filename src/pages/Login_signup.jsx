@@ -65,8 +65,9 @@ const Login_signup = () => {
     if (data.success) {
       setToken(data.token);
       setUserData(data.user)
+      setIsLoggedIn(true);
       console.log(data)
-      navigate("/");
+      navigate(-1);
     }
 
   } catch (error) {
@@ -76,7 +77,7 @@ const Login_signup = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-6 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-6 transition-colors duration-500 pt-30">
       {/* Background Decorative Blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]" />
@@ -84,17 +85,31 @@ const Login_signup = () => {
       </div>
 
       <motion.button
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        onClick={() => navigate(-1)}
-        className="absolute top-8 left-8 flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg group z-50"
-      >
-        <ArrowLeft
-          size={16}
-          className="group-hover:-translate-x-1 transition-transform"
-        />
-        Back
-      </motion.button>
+  initial={{ opacity: 0, x: -10 }}
+  animate={{ opacity: 1, x: 0 }}
+  onClick={() => navigate(-1)}
+  className="
+    fixed top-23 left-6 
+    flex items-center gap-2 
+    px-5 py-2.5 
+    text-xs font-black uppercase tracking-widest 
+    text-slate-500 dark:text-slate-400 
+    hover:text-indigo-600 dark:hover:text-indigo-400 
+    transition-all 
+    bg-white dark:bg-slate-900 
+    rounded-2xl 
+    border border-slate-200 dark:border-slate-800 
+    shadow-lg hover:shadow-xl 
+    z-[999]
+  "
+>
+  <ArrowLeft
+    size={16}
+    className="group-hover:-translate-x-1 transition-transform"
+  />
+  Back
+</motion.button>
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

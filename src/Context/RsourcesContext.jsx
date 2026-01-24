@@ -15,7 +15,7 @@ export const MyProvider = ({ children }) => {
   const [Technologyes_Data, setResourcesData] = useState(null);
 
   useEffect(() => {
-    if (!token) return;
+    
 
     const fetchData = async () => {
       try {

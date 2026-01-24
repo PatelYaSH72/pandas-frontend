@@ -19,11 +19,11 @@ import {
 } from 'lucide-react';
 import Hero from '../components/Hero';
 import Button from '../components/Button';
-import SearchBar from '../components/Search';
 import Categories from '../components/Categories';
 import TrendingTools from '../components/TrendingTools';
 import { useNavigate } from 'react-router';
 import Navbar from '../components/Navbar';
+import SearchPage from '../components/SearchPage';
 
 // --- Main Page Component ---
 
@@ -40,10 +40,10 @@ export default function Home() {
       {/* Navigation */}
       
 
-    <Navbar/>
+    {/* <Navbar/> */}
 
       <Hero />
-      <SearchBar />
+      <SearchPage />
       <Categories />
       <TrendingTools />
 

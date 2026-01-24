@@ -191,8 +191,8 @@ const AddToles = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 pb-20 transition-colors duration-500">
-      <nav className="sticky top-0 z-[60] bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 pb-20 transition-colors duration-500 pt-30">
+      <nav className="sticky top-0 z-[60] bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl   ">
         <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
@@ -212,7 +212,7 @@ const AddToles = () => {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 mt-16">
+      <div className="max-w-4xl mx-auto px-6 mt-3">
         <header className="text-center mb-16">
           <motion.h1
             initial={{ y: 20, opacity: 0 }}

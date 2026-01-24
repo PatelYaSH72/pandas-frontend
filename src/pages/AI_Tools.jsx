@@ -17,8 +17,21 @@ const Badge = ({ children, color = "indigo" }) => (
   </span>
 );
 
-const ToolCard = ({ tool }) => (
-  <motion.div
+const ToolCard = ({ tool }) => {
+
+  const navigate = useNavigate(); // ✅ hook yahin
+
+  const handleViewDetails = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+    } else {
+      navigate(`/Ai-Tools/${tool._id}`);
+    }
+  };
+return (
+<motion.div
     layout
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -54,16 +67,20 @@ const ToolCard = ({ tool }) => (
   </div>
 </div>
 
-    <Link 
-      to={`/Ai-Tools/${tool._id}`} 
-      
-      rel="noreferrer"
-      className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white rounded-xl text-sm font-semibold transition-all"
-    >
-      View Details <ExternalLink size={14} />
-    </Link>
+    <button
+        onClick={() => handleViewDetails(tool._id)}
+        className="w-full flex items-center justify-center gap-2 py-2.5 
+                   bg-slate-50 dark:bg-slate-800 
+                   hover:bg-indigo-600 hover:text-white 
+                   rounded-xl text-sm font-semibold transition-all"
+      >
+        View Details <ExternalLink size={14} />
+      </button>
   </motion.div>
-);
+  )
+  
+  
+};
 
 // --- MAIN PAGE ---
 
@@ -75,8 +92,14 @@ export default function Ai_Tools() {
   const [isScrolled, setIsScrolled] = useState(false);
 
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { AIToolsData } = useContext(AIContext);
+
+  const navigate = useNavigate(); 
+
+  useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
 
   // ✅ useMemo HAMESHA upar
   const filteredTools = useMemo(() => {
@@ -104,9 +127,11 @@ export default function Ai_Tools() {
     );
   }
 
+   
+
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-20">
       
      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
   isScrolled ? "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg py-3" : "bg-transparent py-6"

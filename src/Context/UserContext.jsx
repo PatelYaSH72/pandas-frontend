@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
+import axios from 'axios'
 
 // 1. Context Create Karein
 export const UserContext = createContext();
@@ -25,15 +26,31 @@ export const UserProvider = ({ children }) => {
   }
 }, [token]);
 
-  useEffect(() => {
-  if (userData && Object.keys(userData).length > 0) {
-    localStorage.setItem("userData", JSON.stringify(userData));
+ const getUserData = async () => {
+  try {
+
+    const res = await axios.get(backendUrl + "/api/user/user-data", {headers:{token: token}})
+
+    console.log(res.data.user);
+
+    setUserData(res.data.user)
+    
+    
+  } catch (error) {
+    
   }
-}, [userData]);
+ }
+
+ useEffect(() => {
+  getUserData();
+}, [token]);
+
+
+  
 
     
   const value = {
-    isLoggedIn, setIsLoggedIn, token, setToken, backendUrl, userData, setUserData
+    isLoggedIn, setIsLoggedIn, token, setToken, backendUrl, userData, setUserData, getUserData
     
   };
 // console.log(TechnologyesData)

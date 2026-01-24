@@ -17,7 +17,7 @@ export const AiProvider = ({ children }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const getAIToolsData = async () => {
-    const { data } = await axois.get(backendUrl + "/api/user/AiTools-data",{headers:{token:token}});
+    const { data } = await axois.get(backendUrl + "/api/user/AiTools-data");
 
     setAIToolsData(data.data)
     
@@ -28,7 +28,7 @@ export const AiProvider = ({ children }) => {
   };
 
    useEffect(() => {
-  if (!token) return;
+  
   getAIToolsData();
 }, [token]);
 

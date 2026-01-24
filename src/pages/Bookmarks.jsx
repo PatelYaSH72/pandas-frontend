@@ -74,7 +74,7 @@
 
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] px-4 md:px-8 lg:px-16 py-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] px-4 md:px-8 lg:px-16 py-8 pt-28">
   {/* Back Button */}
   <button
     onClick={() => window.history.back()}

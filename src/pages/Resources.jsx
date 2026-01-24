@@ -18,6 +18,10 @@ export default function Resources() {
     }
   }, [Technologyes_Data, active]);
 
+  useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
+
   if (!active) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -30,11 +34,21 @@ export default function Resources() {
     );
   }
 
+  const handleViewDetails = (slug) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+    } else {
+      navigate(`/Resources/${slug}`)
+    }
+  };
+
   // Active category ka icon component nikalne ke liye
   const ActiveIcon = Icons[active.icon] || Icons.Code;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-20">
       <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-[280px_1fr] gap-12">
         
         {/* ========== LEFT SIDEBAR ========== */}
@@ -123,7 +137,7 @@ export default function Resources() {
                       complete interactive roadmap design kiya hai.
                     </p>
                     <button
-                      onClick={() => navigate(`/Resources/${active?.slug}`)}
+                     onClick={() => handleViewDetails(active?.slug)}
                       className="group flex items-center gap-3 px-8 py-4 rounded-2xl bg-white text-indigo-600 font-black hover:bg-indigo-50 transition-all shadow-xl hover:scale-105"
                     >
                       Unlock Full Roadmap

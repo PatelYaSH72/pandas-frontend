@@ -31,6 +31,10 @@ const CategoryFull = () => {
     setAIToolData(AIToolsData)
   },[AIToolsData])
 
+  useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
+
   // Filter Categories based on search
   const filteredCategories = useMemo(() => {
     return TechnologyesName.filter((cat) =>
@@ -44,7 +48,7 @@ const CategoryFull = () => {
     : AiToolData;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 pt-20">
       {/* --- SIDEBAR: Fixed on Desktop, Hidden on Mobile (Optional Toggle) --- */}
       <aside className="w-80 hidden lg:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 h-screen p-6">
         <div className="flex items-center gap-2 mb-8 px-2">

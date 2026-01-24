@@ -241,9 +241,13 @@ const toggleSave = async () => {
   }
 };
 
+useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20 pt-20">
       {/* NAVIGATION */}
       <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <button
