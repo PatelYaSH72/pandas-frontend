@@ -87,7 +87,7 @@ const Login_signup = () => {
       <motion.button
   initial={{ opacity: 0, x: -10 }}
   animate={{ opacity: 1, x: 0 }}
-  onClick={() => navigate(-1)}
+  onClick={() => navigate('/')}
   className="
     fixed top-23 left-6 
     flex items-center gap-2 

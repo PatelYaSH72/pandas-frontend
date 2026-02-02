@@ -2,6 +2,8 @@
   import axios from "axios";
   import { AIContext } from "../Context/AitoolsContext";
   import { ExternalLink, MoveLeft, Star } from "lucide-react";
+  import { motion } from "framer-motion";
+
 
   const Bookmarks = () => {
     const { token, backendUrl } = useContext(AIContext);
@@ -38,9 +40,13 @@
 
     if (loading) {
       return (
-        <div className="text-center py-20 text-slate-500 font-bold">
-          Loading bookmarks...
-        </div>
+        <div className="min-h-screen flex items-center justify-center bg-slate-950">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full"
+                />
+              </div>
       );
     }
 

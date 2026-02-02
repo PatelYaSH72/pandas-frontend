@@ -1,15 +1,17 @@
 import axios from "axios";
-import { useContext } from "react";
-import { AIContext } from "../Context/AitoolsContext";
 
-export const semanticSearch = async (query) => {
+export const semanticSearch = async (query, backendUrl) => {
   if (!query) return { tools: [], resources: [] };
 
-  const {backendUrl} = useContext(AIContext)
+  console.log("aaa");
+  
 
-  const res = await axios.get(backendUrl + `/api/search`, {
+  const res = await axios.get(`${backendUrl}/api/user/search`, {
     params: { query },
   });
 
+  console.log(res.data);
   return res.data;
+
+  
 };

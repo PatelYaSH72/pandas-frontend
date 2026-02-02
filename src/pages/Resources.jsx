@@ -2,7 +2,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; 
-// Saare icons ko as a library import kiya
 import * as Icons from "lucide-react";
 import { ArrowLeft, ArrowRight, HelpCircle, Sparkles, Lock } from "lucide-react";
 import { MyContext } from "../Context/RsourcesContext";

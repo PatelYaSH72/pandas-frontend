@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Search, Code, Brain, Database, Smartphone, 
-  Palette, ShieldCheck, ArrowRight, Plus, 
-  Github, Twitter, ExternalLink, TrendingUp, 
-  LogIn,
-  UserPlus,
-  User,
-  Info,
-  MessageSquare,
-  Menu,
-  X,
-  ChevronDown,
-  LayoutDashboard,
-  Heart,
-  Settings,
-  LogOut
+  
+   ShieldCheck, Plus, 
+  Github, Twitter,  
+  
 } from 'lucide-react';
 import Hero from '../components/Hero';
 import Button from '../components/Button';
@@ -30,9 +19,17 @@ import SearchPage from '../components/SearchPage';
 export default function Home() {
 
  const navigate = useNavigate()
- const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+ const navigateWithAuth = (navigate, path) => {
+  const token = localStorage.getItem('token'); // yaha token ka naam jo bhi aap use kar rahe ho
+  if (token) {
+    navigate(path);
+  } else {
+    navigate('/login');
+  }
+};
+
+ 
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-100 selection:text-indigo-900">
@@ -85,33 +82,47 @@ export default function Home() {
       <footer className="bg-slate-50 dark:bg-slate-900 pt-20 pb-10 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
-              <span className="text-xl font-bold">Pandas</span>
-            </div>
+            <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/')}>
+  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
+  <span className="text-xl font-bold">Pandas</span>
+</div>
+
             <p className="text-slate-500">The premier destination for discovering next-gen AI tools and tech learning resources.</p>
           </div>
           <div>
             <h4 className="font-bold mb-6">Explore</h4>
             <ul className="space-y-4 text-slate-500">
-              <li><a href="#" className="hover:text-indigo-600">AI Tool Directory</a></li>
-              <li><a href="#" className="hover:text-indigo-600">Learning Paths</a></li>
-              <li><a href="#" className="hover:text-indigo-600">API Documentation</a></li>
-            </ul>
+  <li>
+    <button onClick={() => navigateWithAuth(navigate, '/Ai-Tools')} className="hover:text-indigo-600 cursor-pointer">
+      AI Tool Directory
+    </button>
+  </li>
+  <li>
+    <button onClick={() => navigateWithAuth(navigate, '/Resources')} className="hover:text-indigo-600 cursor-pointer">
+      Learning Paths
+    </button>
+  </li>
+  <li>
+    <button onClick={() => navigateWithAuth(navigate, '/Category')} className="hover:text-indigo-600 cursor-pointer">
+      Categories
+    </button>
+  </li>
+</ul>
+
           </div>
           <div>
             <h4 className="font-bold mb-6">Support</h4>
             <ul className="space-y-4 text-slate-500">
-              <li><a href="#" className="hover:text-indigo-600">Submit a Resource</a></li>
-              <li><a href="#" className="hover:text-indigo-600">Join the Discord</a></li>
-              <li><a href="#" className="hover:text-indigo-600">Privacy Policy</a></li>
+              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Add-Tools')}>Submit a Tools</a></li>
+              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Contact')}>Join the Discord</a></li>
+              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Privacy-Policy')}>Privacy Policy</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-6">Connect</h4>
             <div className="flex gap-4">
-              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:bg-indigo-50"><Twitter size={20}/></div>
-              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:bg-indigo-50"><Github size={20}/></div>
+              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600"><Twitter size={20}/></div>
+              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600"><Github size={20}/></div>
             </div>
           </div>
         </div>

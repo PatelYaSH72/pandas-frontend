@@ -1,55 +1,53 @@
 "use client";
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   ExternalLink,
   Star,
   LayoutGrid,
-  CheckCircle2,
   Search,
   Filter,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { AIContext } from "../Context/AitoolsContext";
 import { MyContext } from "../Context/RsourcesContext";
-import { useEffect } from "react";
 
 const CategoryFull = () => {
   const { AIToolsData } = useContext(AIContext);
-    
-  const [AiToolData, setAIToolData] = useState(null)
-  
   const { TechnologyesName } = useContext(MyContext);
 
+  const [AiToolData, setAIToolData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    setAIToolData(AIToolsData)
-  },[AIToolsData])
+  useEffect(() => {
+    setAIToolData(AIToolsData);
+  }, [AIToolsData]);
 
   useEffect(() => {
-      window.scrollTo(0, 0);
-    }, []);
+    window.scrollTo(0, 0);
+  }, []);
 
-  // Filter Categories based on search
   const filteredCategories = useMemo(() => {
     return TechnologyesName.filter((cat) =>
       cat.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [TechnologyesName, searchQuery]);
 
-  // Filter Tools based on selected category
-  const filteredTools = selectedCategory
-    ? AiToolData?.filter((tool) => tool.category.includes(selectedCategory))
-    : AiToolData;
+  const filteredTools = useMemo(() => {
+    return selectedCategory
+      ? AiToolData?.filter((tool) => tool.category.includes(selectedCategory))
+      : AiToolData;
+  }, [AiToolData, selectedCategory]);
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 pt-20">
-      {/* --- SIDEBAR: Fixed on Desktop, Hidden on Mobile (Optional Toggle) --- */}
+      
+      {/* --- DESKTOP SIDEBAR --- */}
       <aside className="w-80 hidden lg:flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 h-screen p-6">
         <div className="flex items-center gap-2 mb-8 px-2">
           <Filter className="text-indigo-600" size={20} />
@@ -58,7 +56,6 @@ const CategoryFull = () => {
           </h2>
         </div>
 
-        {/* Category Search */}
         <div className="relative mb-6">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -73,7 +70,6 @@ const CategoryFull = () => {
           />
         </div>
 
-        {/* Category List */}
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <div className="space-y-1">
             <button
@@ -119,15 +115,116 @@ const CategoryFull = () => {
         </div>
       </aside>
 
+      {/* --- MOBILE FILTER PANEL --- */}
+      <AnimatePresence>
+        {isFilterOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsFilterOpen(false)}
+              className="fixed inset-0 bg-black z-40 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed top-0 left-0 z-50 w-80 mt-20 h-full bg-white dark:bg-slate-900 p-6 border-r border-slate-200 dark:border-slate-800 lg:hidden"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2  px-2">
+          <Filter className="text-indigo-600" size={20} />
+          <h2 className="font-bold text-xl tracking-tight text-slate-100">
+            Filters
+          </h2>
+        </div>
+                <button onClick={() => setIsFilterOpen(false)}>
+                  <ArrowLeft size={20} className="text-slate-100"/>
+                </button>
+              </div>
+
+              {/* Copy sidebar content for mobile */}
+             <div className="relative mb-6">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={16}
+          />
+          <input
+            type="text"
+            placeholder="Search categories..."
+            className="w-full bg-slate-100 text-slate-100 dark:bg-slate-800 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-1">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                !selectedCategory
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <span>All Resources</span>
+              <span className="opacity-60">{AiToolData?.length}</span>
+            </button>
+
+            {filteredCategories.map((cat) => {
+              const count = AiToolData?.filter((t) =>
+                t.category.includes(cat)
+              ).length;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    selectedCategory === cat
+                      ? "bg-indigo-600 text-white shadow-lg"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                  }`}
+                >
+                  <span className="truncate">{cat}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                      selectedCategory === cat
+                        ? "bg-white/20"
+                        : "bg-slate-200 dark:bg-slate-800"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto">
+        {/* MOBILE FILTER BUTTON */}
+        <button
+          onClick={() => setIsFilterOpen(true)}
+          className="lg:hidden mb-6 flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold"
+        >
+          <Filter size={18} /> Filter
+        </button>
+
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 mb-6 cursor-pointer"
         >
-          <ArrowLeft size={16} />
-          Back
+          <ArrowLeft size={16} /> Back
         </button>
+
         <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-indigo-600 font-bold tracking-widest text-xs uppercase">

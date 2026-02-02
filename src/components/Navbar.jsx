@@ -46,13 +46,19 @@ const Navbar = () => {
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-2xl group-hover:rotate-6 transition-transform">
             P
           </div>
-          <span className="text-xl md:text-2xl font-bold tracking-tight">
+          <span className="text-xl md:text-2xl font-bold tracking-tight text-white">
             Pandas
           </span>
         </div>
 
         {/* 2. Desktop Navigation Links (Hidden on Mobile) */}
         <div className="hidden md:flex items-center gap-8 font-bold text-xs lg:text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
+          >
+            <Home  size={16} /> Home
+          </Link>
           <Link
             to="/about"
             className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
@@ -64,12 +70,6 @@ const Navbar = () => {
             className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
           >
             <MessageSquare size={16} /> Contact
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:text-indigo-600 transition-colors"
-          >
-            <Home  size={16} /> Home
           </Link>
         </div>
 
@@ -163,10 +163,10 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl animate-in slide-in-from-top duration-300">
           <a
-            href="/tools"
+            href="/"
             className="block text-lg font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600"
           >
-            Tools
+           <Home className="inline mr-2" size={20} /> Home
           </a>
           <a
             href="/about"

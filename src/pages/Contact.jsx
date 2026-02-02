@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Bug, Send, ArrowLeft, CheckCircle2, Paperclip } from 'lucide-react';
+import axios from 'axios';
+
 
 const ContactPage = () => {
   const navigate = useNavigate();
@@ -32,14 +34,51 @@ const ContactPage = () => {
     setFormData((prev) => ({ ...prev, type: newType }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Yahan aapka pura data ek hi state object mein hai
-    console.log("Final State Object to Backend:", formData);
-    
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!localStorage.getItem("token")) return navigate("/login");
+
+  const payload = {
+    name: formData.name,
+    type: formData.type,
+    email: formData.email,
+    severity: formData.type === "bug" ? formData.severity : "N/A",
+    subject: formData.subject,
+    message: formData.message,
   };
+
+  console.log(payload);
+  
+
+  try {
+    // const res = await fetch("http://localhost:4000/api/user/send-email", {
+    //   method: "POST",
+    //   headers: {
+    //     token: localStorage.getItem("token"),
+    //   },
+    //   body: JSON.stringify(payload),
+    // });
+
+    const res = await axios.post(
+      "http://localhost:4000/api/user/send-email",
+      payload,{headers:{ token: localStorage.getItem("token") }})
+
+    const data = await res.data;
+
+    if (data.success) {
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    } else {
+      alert("Email failed");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error");
+  }
+};
+
+
 
   const inputClasses = "w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 ring-indigo-500/20 focus:border-indigo-500/50 transition-all font-medium placeholder:text-slate-400";
 
@@ -126,9 +165,6 @@ const ContactPage = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
-                  <button type="button" className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-indigo-500 transition-colors">
-                    <Paperclip size={16} /> Attach File
-                  </button>
                   <button 
                     type="submit"
                     className={`w-full md:w-auto px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 ${formData.type === 'bug' ? 'bg-rose-600 text-white' : 'bg-indigo-600 text-white'}`}

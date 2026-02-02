@@ -28,6 +28,7 @@ import { useNavigate } from "react-router";
 import { useContext } from "react";
 import { AIContext } from "../Context/AitoolsContext";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const AddToles = () => {
   const navigate = useNavigate();
@@ -35,8 +36,7 @@ const AddToles = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-    const { token, backendUrl } = useContext(AIContext);
-
+  const { token, backendUrl } = useContext(AIContext);
 
   const aiCategoriesList = [
     "Information Technology",
@@ -77,7 +77,9 @@ const AddToles = () => {
     whatItDoes: "",
     howToUse: [""],
     techRelevance: [""],
-    image: "" || "https://img.freepik.com/free-vector/robotic-artificial-intelligence-technology-smart-lerning-from-bigdata_1150-48136.jpg?semt=ais_hybrid&w=740&q=80",
+    image:
+      "" ||
+      "https://img.freepik.com/free-vector/robotic-artificial-intelligence-technology-smart-lerning-from-bigdata_1150-48136.jpg?semt=ais_hybrid&w=740&q=80",
     officialLink: "",
     docLink: "",
     tutorialLink: "",
@@ -163,25 +165,95 @@ const AddToles = () => {
     }
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-
+  const isValidUrl = (url) => {
   try {
-    const res = await axios.post(`${backendUrl}/api/user/submit`, formData, {
-      headers: { token: token },
-    });
-
-    console.log("Backend Response:", res.data);
-    setShowSuccess(true);
+    const parsed = new URL(url);
+    return ["http:", "https:"].includes(parsed.protocol);
   } catch (err) {
-    console.error("Request failed:", err.response?.data || err.message);
-    alert("Error submitting tool! Check console.");
-  } finally {
-    setIsSubmitting(false);
+    return false;
   }
 };
 
+
+  const handleSubmit = async (e) => {
+    
+    e.preventDefault();
+
+    if (
+  formData.githubLink &&
+  !formData.githubLink.includes("github.com")
+) {
+  toast.error("Please enter a valid GitHub repository link");
+  return;
+}
+
+if (
+  formData.tutorialLink &&
+  !(
+    formData.tutorialLink.includes("youtube.com") ||
+    formData.tutorialLink.includes("youtu.be")
+  )
+) {
+  toast.error("Please enter a valid YouTube link");
+  return;
+}
+
+
+
+
+    const linkFields = [
+    { key: "officialLink", label: "Official Website" },
+    { key: "docLink", label: "Documentation" },
+    { key: "tutorialLink", label: "Tutorial" },
+    { key: "githubLink", label: "Github" },
+  ];
+
+  for (const field of linkFields) {
+    const value = formData[field.key];
+
+    if (value && !isValidUrl(value)) {
+      toast.error(`${field.label} link is not a valid URL`);
+      return; // ❌ stop submit
+    }
+  }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/user/submit",
+        formData,
+        {
+          headers: {
+            token: token,
+          },
+        },
+      );
+
+      if (res.data && res.data.success === false) {
+        toast.error(res.data.message || "Submission failed!");
+        return;
+      }
+      console.log("Backend Response:", res.data);
+      setShowSuccess(true);
+      toast.success("Tool submitted successfully!");
+    } catch (err) {
+      console.error("Request failed:", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "Error submitting tool!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleButtonClick = (e) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // Agar token nahi hai, to submit hone se roko aur login par bhejo
+      e.preventDefault();
+      navigate("/login");
+    }
+    // Agar token hai, to form automatically submit ho jayega (ya aap apna logic yahan likh sakte hain)
+  };
 
   const Label = ({ children, icon: Icon }) => (
     <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2 ml-1">
@@ -281,7 +353,7 @@ const AddToles = () => {
                   placeholder="https://..."
                   className="flex-1 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500/50 rounded-2xl p-5 outline-none transition-all font-medium"
                 />
-                <button
+                {/* <button
                   type="button"
                   onClick={autoFillEverything}
                   disabled={!formData.officialLink || isAnalyzing}
@@ -295,7 +367,7 @@ const AddToles = () => {
                   <span className="text-xs uppercase tracking-widest">
                     {isAnalyzing ? "Analyzing" : "Auto Fill"}
                   </span>
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -493,8 +565,10 @@ const AddToles = () => {
 
           <div className="flex flex-col items-center py-10">
             <button
+              type="submit" // Form submit karne ke liye
+              onClick={handleButtonClick} // Check karne ke liye
               disabled={isSubmitting}
-              className="group relative px-20 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-105 transition-all overflow-hidden"
+              className="group relative px-20 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-105 transition-all overflow-hidden disabled:opacity-50"
             >
               <span className="relative z-10 flex items-center gap-3">
                 {isSubmitting ? (
@@ -504,6 +578,8 @@ const AddToles = () => {
                 )}
                 {isSubmitting ? "Processing..." : "Dispatch Tool"}
               </span>
+
+              {/* Hover Effect Background */}
               <div className="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </button>
           </div>

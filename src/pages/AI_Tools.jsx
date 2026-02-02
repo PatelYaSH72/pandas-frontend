@@ -46,7 +46,7 @@ return (
       </div>
       <div className="flex items-center gap-1 text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">
         <Star size={14} fill="currentColor" />
-        <span className="text-xs font-bold">{tool.rating}</span>
+        <span className="text-xs font-bold">{tool.rating.toFixed(1)}</span>
       </div>
     </div>
     
@@ -90,6 +90,7 @@ export default function Ai_Tools() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [visibleCount, setVisibleCount] = useState(6);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activePrice, setActivePrice] = useState("Price: All");
 
 
   // const navigate = useNavigate();
@@ -103,20 +104,27 @@ export default function Ai_Tools() {
 
   // ✅ useMemo HAMESHA upar
   const filteredTools = useMemo(() => {
-    if (!Array.isArray(AIToolsData)) return [];
+  if (!Array.isArray(AIToolsData)) return [];
 
-    return AIToolsData.filter(tool => {
-      const matchesSearch = tool.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+  return AIToolsData.filter(tool => {
+    // 1. Search Filter
+    const matchesSearch = tool.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-      const matchesCat =
-        activeCategory === "All" ||
-        tool.category?.some(cat => cat.includes(activeCategory));
+    // 2. Category Filter
+    const matchesCat =
+      activeCategory === "All" ||
+      tool.category?.some(cat => cat.includes(activeCategory));
 
-      return matchesSearch && matchesCat;
-    });
-  }, [AIToolsData, search, activeCategory]);
+    // 3. Price Filter (New)
+    const matchesPrice = 
+      activePrice === "Price: All" || 
+      tool.pricing?.toLowerCase() === activePrice.toLowerCase();
+
+    return matchesSearch && matchesCat && matchesPrice;
+  });
+}, [AIToolsData, search, activeCategory, activePrice]); // Added activePrice here
 
   // ✅ return baad me
   if (!AIToolsData || AIToolsData.length === 0) {
@@ -149,17 +157,23 @@ export default function Ai_Tools() {
       </button>
 
       {/* Pricing Select & Filter Icon (Right Side) */}
-      <div className="flex items-center gap-2">
-        <select className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs md:text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer">
-          <option>Price: All</option>
-          <option>Free</option>
-          <option>Paid</option>
-          <option>Freemium</option>
-        </select>
-        <button className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm">
-          <SlidersHorizontal size={18} className="text-slate-600 dark:text-slate-400" />
-        </button>
-      </div>
+      {/* Pricing Select */}
+<div className="flex items-center gap-2">
+  <select 
+    value={activePrice}
+    onChange={(e) => {
+      setActivePrice(e.target.value);
+      setVisibleCount(6); // Reset visible count when filtering
+    }}
+    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs md:text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+  >
+    <option value="Price: All">Price: All</option>
+    <option value="Free">Free</option>
+    <option value="Paid">Paid</option>
+    <option value="Freemium">Freemium</option>
+  </select>
+  {/* ... rest of your code */}
+</div>
     </div>
 
     {/* Bottom Row: Category Pills (Scrollable on mobile) */}

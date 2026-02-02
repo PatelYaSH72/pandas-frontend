@@ -9,6 +9,28 @@ const Categories = () => {
   const navigate = useNavigate();
   const { Technologyes_Data } = useContext(MyContext);
 
+  const handleButtonClick = (e, category) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // Agar token nahi hai, to submit hone se roko aur login par bhejo
+      e.preventDefault();
+      navigate("/login");
+    } else {
+      if (category === "Categories") {
+        navigate("/Category");
+      }
+      else if (category === "Resources"){
+        navigate("/Resources")
+      }
+      else {
+        navigate("/Compare-tools")
+      }
+      
+    }
+    // Agar token hai, to form automatically submit ho jayega (ya aap apna logic yahan likh sakte hain)
+  };
+
   return (
     <section className="py-24 max-w-7xl mx-auto px-6">
       <div className="flex justify-between items-end mb-12">
@@ -30,7 +52,7 @@ const Categories = () => {
             <motion.div
               key={cat.id || i}
               whileHover={{ y: -10 }}
-              onClick={() => navigate(`/Resources`)}
+              onClick={(e) => handleButtonClick(e, "Resources")}
               className="cursor-pointer group"
             >
               {/* h-64 fix height hai jo box ko change nahi hone degi */}
@@ -71,7 +93,7 @@ const Categories = () => {
         <motion.button
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/Category")}
+          onClick={(e) => handleButtonClick(e, "Categories")}
           className="w-full sm:w-auto px-10 py-5 cursor-pointer rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
         >
           Explore All Categories
@@ -80,7 +102,7 @@ const Categories = () => {
         <motion.button 
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/Compare-tools")} 
+          onClick={(e) => handleButtonClick(e, "CompareTools")} 
           className="w-full sm:w-auto px-10 py-5 cursor-pointer rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
         >
           Compare Tools
