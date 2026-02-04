@@ -66,7 +66,7 @@ const Categories = () => {
                   <IconComponent 
                     size={30} 
                     strokeWidth={2.2}
-                    className={`${cat.color || 'text-indigo-600'} group-hover:text-white transition-colors duration-500`} 
+                    className={`${cat.color } group-hover:text-white transition-colors duration-500`} 
                   />
                 </div>
 

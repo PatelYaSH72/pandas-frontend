@@ -219,10 +219,10 @@ export default function Ai_Tools() {
           <h2 className="text-xl font-bold">
             Showing {filteredTools.length} Tools
           </h2>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><LayoutGrid size={18}/></button>
             <button className="p-2 text-slate-400 rounded-lg"><List size={18}/></button>
-          </div>
+          </div> */}
         </div>
 
         <AnimatePresence mode="popLayout">

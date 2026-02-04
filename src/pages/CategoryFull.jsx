@@ -15,7 +15,7 @@ import { MyContext } from "../Context/RsourcesContext";
 
 const CategoryFull = () => {
   const { AIToolsData } = useContext(AIContext);
-  const { TechnologyesName } = useContext(MyContext);
+  const { TechnologyesName,  toolname, setToolname } = useContext(MyContext);
 
   const [AiToolData, setAIToolData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -23,6 +23,33 @@ const CategoryFull = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  // console.log(TechnologyesName);
+   const { Technologyes_Data } = useContext(MyContext);
+    const [active, setActive] = useState([]);
+  
+   useEffect(() => {
+      if (Technologyes_Data && Technologyes_Data.length > 0 && !active.length) {
+       
+        setActive((prev) => {
+      const newNames = Technologyes_Data
+        .map((tech) => tech.name)
+        .filter((name) => !prev.includes(name)); // 👈 condition
+  
+      return [...prev, ...newNames];
+    });
+      }
+    }, [Technologyes_Data, active]);
+
+    console.log(active);
+    
+  
+    useEffect(() => {
+        window.scrollTo(0, 0);
+      }, []);
+  
+      
+  
 
   useEffect(() => {
     setAIToolData(AIToolsData);
@@ -33,10 +60,10 @@ const CategoryFull = () => {
   }, []);
 
   const filteredCategories = useMemo(() => {
-    return TechnologyesName.filter((cat) =>
+    return active.filter((cat) =>
       cat.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [TechnologyesName, searchQuery]);
+  }, [active, searchQuery]);
 
   const filteredTools = useMemo(() => {
     return selectedCategory
@@ -297,7 +324,7 @@ const CategoryFull = () => {
                         className="text-orange-400 fill-orange-400"
                       />
                       <span className="text-sm font-bold text-slate-100">
-                        {tool.rating}
+                        {tool.rating.toFixed(1)}
                       </span>
                     </div>
                     <Link

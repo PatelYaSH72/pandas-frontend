@@ -8,6 +8,7 @@ import {
   Menu,
   ChevronRight,
   ArrowLeft,
+  Bookmark,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ResourceList from "../components/ResourceList";
@@ -137,73 +138,78 @@ useEffect(() => {
 
           {/* HERO */}
           <motion.section
-            id="hero"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between gap-6"
-          >
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-indigo-600">
-                {resorceData?.name}
-              </h1>
-              <p className="text-slate-600 dark:text-slate-300 max-w-3xl">
-                {resorceData?.whatItDoes}
-              </p>
+  id="hero"
+  initial={{ opacity: 0, y: 15 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="relative py-8 md:py-12 border-b border-slate-100/80 dark:border-slate-800/50"
+>
+  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+    
+    <div className="space-y-4 flex-1">
+      {/* Subtle Top Indicator */}
+      <div className="flex items-center gap-3">
+        <span className="text-[10px] font-black tracking-[0.2em] text-indigo-500 uppercase px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 rounded">
+          {resorceData?.pricing}
+        </span>
+        <div className="flex items-center gap-1 text-slate-400 text-xs font-bold">
+          <Star size={12} fill="currentColor" className="text-amber-400" />
+          {resorceData?.rating}
+        </div>
+      </div>
 
-              <div className="flex flex-wrap gap-3 mt-4 items-center">
-                <span className="flex items-center gap-1 text-yellow-400 font-semibold">
-                  <Star size={16} /> {resorceData?.rating}
-                </span>
-                <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 font-medium">
-                  {resorceData?.pricing}
-                </span>
-                {resorceData?.category?.map((cat, i) => (
-                  <span
-                    key={cat.name}
-                    className="px-3 py-1 rounded-full bg-green-100 text-green-600 cursor-pointer hover:bg-green-200 hover:text-green-700 transition"
-                  >
-                    {cat.label}
-                  </span>
-                ))}
-                <button
-                  onClick={toggleBookmark}
-                  className="ml-auto text-red-500 flex items-center gap-1 transition hover:scale-105"
-                >
-                  <Heart className={`${bookmarked ? "fill-red-500" : ""}`} />{" "}
-                  {bookmarked ? "Bookmarked" : "Bookmark"}
-                </button>
-              </div>
+      {/* Clean Header */}
+      <div className="space-y-2">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+          {resorceData?.name}
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg max-w-2xl font-medium leading-relaxed">
+          {resorceData?.whatItDoes}
+        </p>
+      </div>
 
-              <div className="mt-4 flex gap-4 flex-wrap">
-                {resorceData?.officialLink !== "N/A" ? (
-                  <a
-                    href={resorceData?.officialLink}
-                    target="_blank"
-                    className="flex items-center gap-1 px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition shadow-md"
-                  >
-                    <ExternalLink /> Visit Official
-                  </a>
-                ) : (
-                  <span className="px-5 py-2 rounded-xl bg-gray-300 text-gray-600 font-medium">
-                    Official Coming Soon
-                  </span>
-                )}
-                {resorceData?.githubLink !== "N/A" ? (
-                  <a
-                    href={resorceData?.githubLink}
-                    target="_blank"
-                    className="flex items-center gap-1 px-5 py-2 rounded-xl bg-gray-800 text-white font-semibold hover:bg-gray-900 transition shadow-md"
-                  >
-                    <Github /> GitHub
-                  </a>
-                ) : (
-                  <span className="px-5 py-2 rounded-xl bg-gray-300 text-gray-600 font-medium">
-                    GitHub Coming Soon
-                  </span>
-                )}
-              </div>
-            </div>
-          </motion.section>
+      {/* Minimal Tags */}
+      <div className="flex flex-wrap gap-4 pt-1">
+        {resorceData?.category?.map((cat) => (
+          <span key={cat.name} className="text-[11px] font-bold text-slate-400/70 hover:text-indigo-500 transition-colors cursor-default">
+            # {cat.label}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {/* ========== RECREATED MINIMAL BOOKMARK BTN ========== */}
+    <div className="flex-shrink-0 pt-2">
+      <button
+        onClick={toggleBookmark}
+        className="group relative flex items-center justify-center"
+      >
+        <div className={`
+          flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-500 font-bold text-sm
+          ${bookmarked 
+            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 scale-105" 
+            : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+          }
+        `}>
+          <div className="relative">
+            <Bookmark 
+              size={18} 
+              className={`transition-all duration-300 ${bookmarked ? "fill-white" : "group-hover:-translate-y-0.5"}`} 
+            />
+            {/* Minimal Dot Indicator */}
+            {bookmarked && (
+              <motion.span 
+                layoutId="dot"
+                className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full border-2 border-indigo-600"
+              />
+            )}
+          </div>
+          <span className="tracking-tight">{bookmarked ? "Saved" : "Bookmark"}</span>
+        </div>
+      </button>
+    </div>
+
+  </div>
+</motion.section>
 
           {/* HOW TO USE - 3 Steps */}
           <motion.section

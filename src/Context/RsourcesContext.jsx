@@ -13,6 +13,7 @@ export const MyProvider = ({ children }) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [Technologyes_Data, setResourcesData] = useState(null);
+  const [toolname, setToolname] = useState([])
 
   useEffect(() => {
     
@@ -32,14 +33,16 @@ export const MyProvider = ({ children }) => {
     fetchData();
   }, [token]);
 
-  // console.log(resourcesData);
+ 
   
 
   const value = {
     Technologyes_Data,
     TechnologyesName,
     token,
-    backendUrl
+    backendUrl,
+    toolname, 
+    setToolname,
   };
 
   return (
