@@ -21,9 +21,6 @@ import { AIContext } from "../Context/AitoolsContext";
 import { Link, useNavigate, useParams } from "react-router";
 import axios from "axios";
 
-// --- MULTIPLE MOCK DATA (As requested) ---
-
-
 // --- SUB-COMPONENTS ---
 
 const Badge = ({ children, variant = "indigo" }) => {
@@ -314,7 +311,7 @@ useEffect(() => {
                   >
                     Visit Website <ExternalLink size={20} />
                   </a>
-                  <button
+                  {/* <button
   onClick={toggleFavorite}
   className={`p-4 rounded-2xl border transition-all ${
     isFavorite
@@ -323,7 +320,7 @@ useEffect(() => {
   }`}
 >
   <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
-</button>
+</button> */}
 
                   <button
   onClick={toggleSave}

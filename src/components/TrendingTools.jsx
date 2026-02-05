@@ -9,17 +9,20 @@ const TrendingTools = () => {
   const { AIToolsData } = useContext(AIContext);
   const navigate = useNavigate();
 
-  // 🔥 TRENDING LOGIC (rating + reviews)
+  // 🔥 TRENDING LOGIC (rating + reviews + savedCount)
   const trendingTools = useMemo(() => {
     if (!AIToolsData) return [];
 
     return [...AIToolsData]
       .sort((a, b) => {
-        const scoreA = (a.rating || 0) * 2 + (a.reviews?.length || 0);
-        const scoreB = (b.rating || 0) * 2 + (b.reviews?.length || 0);
+        // Score = rating * 2 + number of reviews + savedCount
+        const scoreA =
+          (a.rating || 0) * 2 + (a.reviews?.length || 0) + (a.savedCount || 0);
+        const scoreB =
+          (b.rating || 0) * 2 + (b.reviews?.length || 0) + (b.savedCount || 0);
         return scoreB - scoreA;
       })
-      .slice(0, 8);
+      .slice(0, 8); // Top 8 trending
   }, [AIToolsData]);
 
   return (
@@ -54,8 +57,12 @@ const TrendingTools = () => {
                 </div>
 
                 <h3 className="text-xl font-bold mb-1">{tool.name}</h3>
-                <p className="text-slate-500 text-sm mb-4">
+                <p className="text-slate-500 text-sm mb-2">
                   {tool.category?.[0]}
+                </p>
+
+                <p className="text-xs text-slate-400 mb-2">
+                  ⭐ {tool.rating.toFixed(1) || 0} | Reviews: {tool.reviews?.length || 0} | Saved: {tool.savedCount || 0}
                 </p>
 
                 <div

@@ -62,7 +62,7 @@ export default function Resources() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-20 pb-10">
       
       {/* ========== MOBILE SELECTOR BUTTON ========== */}
-      <div className="lg:hidden sticky top-[72px] z-40 px-4 mb-6">
+      <div className="lg:hidden sticky top-[72px] z-40 px-4 mb-2 pt-4">
         <button 
           onClick={() => setIsMenuOpen(true)}
           className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl shadow-xl shadow-indigo-500/10 active:scale-[0.98] transition-all"
