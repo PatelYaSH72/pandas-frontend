@@ -1,8 +1,5 @@
 import React, { createContext, useEffect, useState, useContext } from "react";
-import {
-  // Technologyes_Data,
-  TechnologyesName,
-} from "../assets/assets";
+
 import axios from "axios";
 import { UserContext } from "./UserContext";
 
@@ -38,7 +35,7 @@ export const MyProvider = ({ children }) => {
 
   const value = {
     Technologyes_Data,
-    TechnologyesName,
+   
     token,
     backendUrl,
     toolname, 
