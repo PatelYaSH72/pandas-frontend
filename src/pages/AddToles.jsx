@@ -384,7 +384,6 @@ const AddToles = () => {
                   <option>Free</option>
                   <option>Freemium</option>
                   <option>Paid</option>
-                  <option>Open Source</option>
                 </select>
               </div>
             </div>
