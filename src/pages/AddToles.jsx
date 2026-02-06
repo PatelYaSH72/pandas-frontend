@@ -179,24 +179,24 @@ const AddToles = () => {
     
     e.preventDefault();
 
-    if (
-  formData.githubLink &&
-  !formData.githubLink.includes("github.com")
-) {
-  toast.error("Please enter a valid GitHub repository link");
-  return;
-}
+//     if (
+//   formData.githubLink &&
+//   !formData.githubLink.includes("github.com")
+// ) {
+//   toast.error("Please enter a valid GitHub repository link");
+//   return;
+// }
 
-if (
-  formData.tutorialLink &&
-  !(
-    formData.tutorialLink.includes("youtube.com") ||
-    formData.tutorialLink.includes("youtu.be")
-  )
-) {
-  toast.error("Please enter a valid YouTube link");
-  return;
-}
+// if (
+//   formData.tutorialLink &&
+//   !(
+//     formData.tutorialLink.includes("youtube.com") ||
+//     formData.tutorialLink.includes("youtu.be")
+//   )
+// ) {
+//   toast.error("Please enter a valid YouTube link");
+//   return;
+// }
 
 
 
