@@ -6778,6 +6778,8 @@ export const AIToolsData = [
   {
     id: 31,
     name: "ClickUp",
+    rating: 4.9,
+    pricing: "Freemium",
     category: [
       "Information Technology",
       "Artificial Intelligence",

@@ -9,7 +9,7 @@ export const UserProvider = ({ children }) => {
   
   const [token, setToken] = useState(localStorage.getItem("token") || "")
 
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token")  || false);
 
     const [userData, setUserData] = useState(()=>{const savedUser = localStorage.getItem("userData");
   return savedUser ? JSON.parse(savedUser) : {};});
