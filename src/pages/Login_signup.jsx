@@ -66,7 +66,7 @@ const Login_signup = () => {
       setToken(data.token);
       setUserData(data.user)
       setIsLoggedIn(true);
-      console.log(data)
+     
       navigate(-1);
     }
 

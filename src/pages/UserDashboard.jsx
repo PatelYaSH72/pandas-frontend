@@ -125,7 +125,7 @@ const UserDashboard = () => {
     }
   };
 
-  console.log(userData);
+  
   
 
   useEffect(() => {
@@ -148,7 +148,7 @@ const UserDashboard = () => {
       formData.append("image", selectedImage);
     }
 
-    console.log("Sending to backend:", [...formData.entries()]);
+   
 
     await axios.put(backendUrl +"/api/user/upate-data", formData, {
         headers: {

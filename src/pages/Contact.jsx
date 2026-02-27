@@ -48,7 +48,7 @@ const ContactPage = () => {
     message: formData.message,
   };
 
-  console.log(payload);
+  
   
 
   try {

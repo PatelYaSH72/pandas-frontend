@@ -193,9 +193,9 @@ const toggleSave = async () => {
           text: toolData.whatItDoes,
           url: window.location.href, // Current page URL
         });
-        console.log("Successfully shared");
+        
       } catch (error) {
-        console.log("Error sharing:", error);
+        
       }
     } else {
       // Fallback: Agar browser share support nahi karta to URL copy ho jayega

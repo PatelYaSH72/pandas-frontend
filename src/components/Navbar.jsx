@@ -28,7 +28,7 @@ const Navbar = () => {
   const { isLoggedIn, setIsLoggedIn, userData, setToken } =
     useContext(UserContext);
 
-    console.log(userData.name);
+    
     
 
   const handleLogout = () => {

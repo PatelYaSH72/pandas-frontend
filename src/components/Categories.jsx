@@ -9,7 +9,7 @@ const Categories = () => {
   const navigate = useNavigate();
   const { Technologyes_Data } = useContext(MyContext);
 
-  console.log(Technologyes_Data);
+  
 
   // Helper function to calculate average rating
 const getAverageRating = (reviews) => {

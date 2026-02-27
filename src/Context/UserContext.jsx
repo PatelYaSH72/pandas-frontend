@@ -31,7 +31,7 @@ export const UserProvider = ({ children }) => {
 
     const res = await axios.get(backendUrl + "/api/user/user-data", {headers:{token: token}})
 
-    console.log(res.data.user);
+   
 
     setUserData(res.data.user)
     

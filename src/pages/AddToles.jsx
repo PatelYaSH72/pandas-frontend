@@ -234,7 +234,7 @@ const AddToles = () => {
         toast.error(res.data.message || "Submission failed!");
         return;
       }
-      console.log("Backend Response:", res.data);
+      
       setShowSuccess(true);
       toast.success("Tool submitted successfully!");
     } catch (err) {

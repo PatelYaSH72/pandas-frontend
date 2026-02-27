@@ -41,7 +41,7 @@ const CategoryFull = () => {
       }
     }, [Technologyes_Data, active]);
 
-    console.log(active);
+   
     
   
     useEffect(() => {

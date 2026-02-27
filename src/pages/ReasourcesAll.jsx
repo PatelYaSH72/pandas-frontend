@@ -133,7 +133,7 @@ const [isInitialLoad, setIsInitialLoad] = useState(true);
         // yahan state set karo
 
         SetResorceData(res.data.data);
-        console.log(res.data.isBookmarked);
+        
         setBookmarked(res.data.isBookmarked);
         setBookmarkCount(res.data.bookmarkCount);
         setReviews(res.data.data.reviews);
@@ -147,7 +147,7 @@ const [isInitialLoad, setIsInitialLoad] = useState(true);
     }
   }, [slug, token]);
 
-  console.log(reviews);
+ 
 
   // console.log(Technologyes_Data[0].category);
 
@@ -209,7 +209,7 @@ const toggleBookmark = async () => {
   }
 };
 
-console.log(bookmarked);
+
 
 // before API call
 
