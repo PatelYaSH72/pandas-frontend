@@ -229,14 +229,7 @@ const Login_signup = () => {
           </div>
 
           {/* Social Logins */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-bold text-sm">
-              <Chrome size={18} className="text-red-500" /> Google
-            </button>
-            <button className="flex items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-bold text-sm">
-              <Github size={18} /> Github
-            </button>
-          </div>
+          
 
           {/* Toggle Link */}
           <p className="text-center mt-8 text-sm font-medium text-slate-500 dark:text-slate-400">
