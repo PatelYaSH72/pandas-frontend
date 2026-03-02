@@ -1,29 +1,35 @@
 import { ArrowRight, TrendingUp } from "lucide-react";
 import Card from "./Card";
 import { motion } from "framer-motion";
-import { useContext, useMemo } from "react";
-import { AIContext } from "../Context/AitoolsContext";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 const TrendingTools = () => {
-  const { AIToolsData } = useContext(AIContext);
+  const [trendingTools, setTrendingTools] = useState([]);
   const navigate = useNavigate();
 
-  // 🔥 TRENDING LOGIC (rating + reviews + savedCount)
-  const trendingTools = useMemo(() => {
-    if (!AIToolsData) return [];
+  // 🔥 Fetch Trending Tools from Backend
+  useEffect(() => {
+    const fetchTrendingTools = async () => {
+      try {
+        const res = await fetch(
+          `${backendUrl}/api/user/AiTooltranding-data`
+        );
 
-    return [...AIToolsData]
-      .sort((a, b) => {
-        // Score = rating * 2 + number of reviews + savedCount
-        const scoreA =
-          (a.rating || 0) * 2 + (a.reviews?.length || 0) + (a.savedCount || 0);
-        const scoreB =
-          (b.rating || 0) * 2 + (b.reviews?.length || 0) + (b.savedCount || 0);
-        return scoreB - scoreA;
-      })
-      .slice(0, 8); // Top 8 trending
-  }, [AIToolsData]);
+        const data = await res.json();
+
+        if (data.success) {
+          setTrendingTools(data.data); // already sorted & top 6
+        }
+      } catch (error) {
+        console.error("Trending Fetch Error:", error);
+      }
+    };
+
+    fetchTrendingTools();
+  }, []);
 
   return (
     <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
@@ -57,12 +63,15 @@ const TrendingTools = () => {
                 </div>
 
                 <h3 className="text-xl font-bold mb-1">{tool.name}</h3>
+
                 <p className="text-slate-500 text-sm mb-2">
                   {tool.category?.[0]}
                 </p>
 
                 <p className="text-xs text-slate-400 mb-2">
-                  ⭐ {tool.rating.toFixed(1) || 0} | Reviews: {tool.reviews?.length || 0} | Saved: {tool.savedCount || 0}
+                  ⭐ {(tool.rating || 0).toFixed(1)} | 
+                  Reviews: {tool.reviewsCount || 0} | 
+                  Saved: {tool.savedCount || 0}
                 </p>
 
                 <div
@@ -71,6 +80,7 @@ const TrendingTools = () => {
                 >
                   View Details <ArrowRight size={16} />
                 </div>
+
               </Card>
             </motion.div>
           ))}
