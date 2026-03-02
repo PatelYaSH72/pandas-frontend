@@ -24,7 +24,7 @@ const CategoryFull = () => {
 
   const navigate = useNavigate();
 
-  // console.log(TechnologyesName);
+  console.log(AiToolData);
    const { Technologyes_Data } = useContext(MyContext);
     const [active, setActive] = useState([]);
   
