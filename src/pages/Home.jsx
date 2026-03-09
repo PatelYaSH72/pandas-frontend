@@ -40,7 +40,7 @@ export default function Home() {
     {/* <Navbar/> */}
 
       <Hero />
-      <SearchPage />
+      {/* <SearchPage /> */}
       <Categories />
       <TrendingTools />
 
