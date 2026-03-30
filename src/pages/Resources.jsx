@@ -43,7 +43,9 @@ const contentCache = useRef({});
     return;
   }
 
-  fetch(`${backendUrl}/api/user/list`)
+  fetch(`${backendUrl}/api/user/list`, {
+  headers: {token},
+})
     .then((res) => res.json())
     .then((json) => {
       const list = json.data || [];
@@ -74,7 +76,9 @@ const contentCache = useRef({});
   setContentLoading(true);
   setActiveData(null);
 
-  fetch(`${backendUrl}/api/user/${tech.slug}`)
+  fetch(`${backendUrl}/api/user/${tech.slug}`, {
+  headers: {token}
+})
     .then((res) => res.json())
     .then((json) => {
       contentCache.current[tech.slug] = json.data; // 🔥 cache store
