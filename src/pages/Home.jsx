@@ -79,57 +79,115 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-50 dark:bg-slate-900 pt-20 pb-10 border-t border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-          <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/')}>
-  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
-  <span className="text-xl font-bold">Pandas</span>
-</div>
+     <footer className="bg-slate-50 dark:bg-slate-900 pt-20 pb-10 border-t border-slate-200 dark:border-slate-800">
+  
+  {/* Top Grid */}
+  <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+    
+    {/* Brand */}
+    <div>
+      <div 
+        className="flex items-center gap-2 mb-6 cursor-pointer"
+        onClick={() => navigateWithAuth(navigate, '/')}
+      >
+        <img 
+          src="/logo-img.png" 
+          alt="Pandas Logo" 
+          className="w-8 h-8 object-contain"
+        />
+        <span className="text-xl font-bold">Pandas</span>
+      </div>
 
-            <p className="text-slate-500">The premier destination for discovering next-gen AI tools and tech learning resources.</p>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">Explore</h4>
-            <ul className="space-y-4 text-slate-500">
-  <li>
-    <button onClick={() => navigateWithAuth(navigate, '/Ai-Tools')} className="hover:text-indigo-600 cursor-pointer">
-      AI Tool Directory
-    </button>
-  </li>
-  <li>
-    <button onClick={() => navigateWithAuth(navigate, '/Resources')} className="hover:text-indigo-600 cursor-pointer">
-      Learning Paths
-    </button>
-  </li>
-  <li>
-    <button onClick={() => navigateWithAuth(navigate, '/Category')} className="hover:text-indigo-600 cursor-pointer">
-      Categories
-    </button>
-  </li>
-</ul>
+      <p className="text-slate-500">
+        The premier destination for discovering next-gen AI tools and tech learning resources.
+      </p>
+    </div>
 
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">Support</h4>
-            <ul className="space-y-4 text-slate-500">
-              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Add-Tools')}>Submit a Tools</a></li>
-              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Contact')}>Join the Discord</a></li>
-              <li><a className="hover:text-indigo-600 cursor-pointer" onClick={() => navigateWithAuth(navigate, '/Privacy-Policy')}>Privacy Policy</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">Connect</h4>
-            <div className="flex gap-4">
-              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600"><Twitter size={20}/></div>
-              <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600"><Github size={20}/></div>
-            </div>
-          </div>
+    {/* Explore */}
+    <div>
+      <h4 className="font-bold mb-6">Explore</h4>
+      <ul className="space-y-4 text-slate-500">
+        <li>
+          <button onClick={() => navigateWithAuth(navigate, '/Ai-Tools')} className="hover:text-indigo-600">
+            AI Tool Directory
+          </button>
+        </li>
+        <li>
+          <button onClick={() => navigateWithAuth(navigate, '/Resources')} className="hover:text-indigo-600">
+            Learning Paths
+          </button>
+        </li>
+        <li>
+          <button onClick={() => navigateWithAuth(navigate, '/Category')} className="hover:text-indigo-600">
+            Categories
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    {/* Support */}
+    <div>
+      <h4 className="font-bold mb-6">Support</h4>
+      <ul className="space-y-4 text-slate-500">
+        <li>
+          <span onClick={() => navigateWithAuth(navigate, '/Add-Tools')} className="hover:text-indigo-600 cursor-pointer">
+            Submit a Tool
+          </span>
+        </li>
+        <li>
+          <span onClick={() => navigateWithAuth(navigate, '/Contact')} className="hover:text-indigo-600 cursor-pointer">
+            Join the Discord
+          </span>
+        </li>
+        <li>
+          <span onClick={() => navigateWithAuth(navigate, '/Privacy-Policy')} className="hover:text-indigo-600 cursor-pointer">
+            Privacy Policy
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    {/* Social */}
+    <div>
+      <h4 className="font-bold mb-6">Connect</h4>
+      <div className="flex gap-4">
+        <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600">
+          <Twitter size={20}/>
         </div>
-        <div className="text-center text-slate-400 text-sm border-t border-slate-200 dark:border-slate-800 pt-8">
-          © 2026 Pandas AI Hub. Built for the community.
+        <div className="p-2 bg-white dark:bg-slate-800 rounded-lg cursor-pointer hover:text-indigo-600">
+          <Github size={20}/>
         </div>
-      </footer>
+      </div>
+    </div>
+
+  </div>
+
+  {/* Bottom Bar (SEPARATE — THIS WAS YOUR MISTAKE) */}
+  <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-400 text-sm">
+      
+      {/* Left: Logo + Name */}
+      <div 
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={() => navigateWithAuth(navigate, '/')}
+      >
+        <img 
+          src="/logo-img.png" 
+          alt="Pandas Logo" 
+          className="w-6 h-6 object-contain"
+        />
+        <span className="font-semibold text-slate-600 dark:text-slate-300">
+          Pandas
+        </span>
+      </div>
+
+      {/* Right: Copyright */}
+      <p>© 2026 Pandas. All rights reserved.</p>
+
+    </div>
+  </div>
+
+</footer>
     </div>
   );
 }

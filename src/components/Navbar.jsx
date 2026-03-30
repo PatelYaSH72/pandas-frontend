@@ -55,14 +55,16 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-4">
           
           {/* LOGO */}
-          <div onClick={() => navigate("/")} className="flex items-center gap-2 md:gap-3 group cursor-pointer shrink-0">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-600/20 group-hover:scale-110 transition-transform">
-              P
-            </div>
-            <span className="text-sm md:text-lg font-bold text-white uppercase tracking-[0.2em]">
-              Pandas
-            </span>
-          </div>
+          <div
+  onClick={() => navigate("/")}
+  className="flex items-center gap-2 md:gap-3 group cursor-pointer shrink-0"
+>
+  <img
+    src="/logo-img.png"
+    alt="Pandas Logo"
+    className="h-8 md:h-9 w-auto object-contain transition-transform group-hover:scale-105"
+  />
+</div>
 
           {/* CENTRAL SEARCH PILL (Desktop) */}
           <div className="hidden md:flex flex-1 justify-center max-w-md">
