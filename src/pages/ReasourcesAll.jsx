@@ -42,7 +42,7 @@ export default function ReasourcesAll() {
 
   console.log(slug);
 
-  const { Technologyes_Data, token, backendUrl } = useContext(MyContext);
+  const { token, backendUrl } = useContext(MyContext);
   const REVIEWS_PER_PAGE = 4;
 
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -112,15 +112,6 @@ const [isInitialLoad, setIsInitialLoad] = useState(true);
   };
 
   useEffect(() => {
-    const technologyData = Technologyes_Data?.find(
-      (item) => item.slug === slug,
-    );
-    if (technologyData) {
-      // SetResorceData(technologyData);
-    }
-  }, [slug, Technologyes_Data]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(
@@ -142,17 +133,13 @@ const [isInitialLoad, setIsInitialLoad] = useState(true);
       }
     };
 
+    
+    
     if (slug && token) {
       fetchData();
     }
   }, [slug, token]);
-
- 
-
-  // console.log(Technologyes_Data[0].category);
-
   
-
 
 const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
