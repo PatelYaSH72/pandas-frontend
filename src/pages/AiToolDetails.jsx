@@ -1,9 +1,7 @@
-import React, { useContext, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Star,
   ExternalLink,
-  Heart,
   BookOpen,
   PlayCircle,
   Github,
@@ -16,65 +14,110 @@ import {
   Flag,
   Info,
   Save,
+  ArrowUpRight,
+  Clock3,
+  Tag,
+  Sparkles,
 } from "lucide-react";
+
 import { AIContext } from "../Context/AitoolsContext";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
-// --- SUB-COMPONENTS ---
+/* =========================================================
+   BADGE
+========================================================= */
 
-const Badge = ({ children, variant = "indigo" }) => {
-  const styles = {
-    indigo:
-      "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800",
-    emerald:
-      "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800",
-    slate:
-      "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+const Badge = ({ children, variant = "default" }) => {
+  const variants = {
+    accent:
+      "bg-[#E7F1EA] text-[#3F7A5B] border-[#D5E5D9]",
+
+    neutral:
+      "bg-[#F4F6F4] text-[#4B5C53] border-[#E3E8E3]",
+
+    warning:
+      "bg-[#FBF4E7] text-[#9A6A22] border-[#F0DFC0]",
+
+    default:
+      "bg-white text-[#4B5C53] border-[#E3E8E3]",
   };
+
   return (
     <span
-      className={`px-3 py-1 text-[11px] font-bold uppercase rounded-full border tracking-wide ${styles[variant]}`}
+      className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-semibold tracking-wide ${variants[variant]}`}
     >
       {children}
     </span>
   );
 };
 
+/* =========================================================
+   RESOURCE LINK
+========================================================= */
+
 const ResourceLink = ({ icon: Icon, label, href }) => {
-  const isDisabled = !href || href === "N/A" || href === "";
+  const disabled = !href || href === "N/A";
+
   return (
     <a
-      href={isDisabled ? undefined : href}
+      href={disabled ? undefined : href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-        isDisabled
-          ? "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 opacity-50 cursor-not-allowed"
-          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:shadow-md cursor-pointer active:scale-95"
+      onClick={(e) => {
+        if (disabled) e.preventDefault();
+      }}
+      className={`group flex items-center justify-between rounded-xl border p-4 transition-all duration-200 ${
+        disabled
+          ? "cursor-not-allowed border-[#E3E8E3] bg-[#F7F8F6] opacity-50"
+          : "border-[#E3E8E3] bg-white hover:border-[#BFD3C5] hover:bg-[#FAFAF8]"
       }`}
-      onClick={(e) => isDisabled && e.preventDefault()}
     >
       <div className="flex items-center gap-3">
-        <Icon
-          size={18}
-          className={isDisabled ? "text-slate-400" : "text-indigo-600"}
-        />
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+            disabled
+              ? "bg-[#EEF0EE] text-[#8A988E]"
+              : "bg-[#E7F1EA] text-[#3F7A5B]"
+          }`}
+        >
+          <Icon size={17} strokeWidth={1.8} />
+        </div>
+
         <span
-          className={`font-semibold ${
-            isDisabled ? "text-slate-400" : "text-slate-700 dark:text-slate-200"
+          className={`text-sm font-semibold ${
+            disabled ? "text-[#8A988E]" : "text-[#141F19]"
           }`}
         >
           {label}
         </span>
       </div>
-      {!isDisabled && <ExternalLink size={14} className="text-slate-400" />}
+
+      {!disabled && (
+        <ArrowUpRight
+          size={16}
+          className="text-[#8A988E] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#3F7A5B]"
+        />
+      )}
     </a>
   );
 };
 
+/* =========================================================
+   TIME AGO
+========================================================= */
+
 const timeAgo = (date) => {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  if (!date) return "Just now";
+
+  const seconds = Math.floor(
+    (new Date() - new Date(date)) / 1000
+  );
+
+  if (Number.isNaN(seconds) || seconds < 0) {
+    return "Just now";
+  }
 
   const intervals = [
     { label: "year", seconds: 31536000 },
@@ -84,515 +127,958 @@ const timeAgo = (date) => {
     { label: "minute", seconds: 60 },
   ];
 
-  for (let i of intervals) {
-    const count = Math.floor(seconds / i.seconds);
+  for (const interval of intervals) {
+    const count = Math.floor(seconds / interval.seconds);
+
     if (count >= 1) {
-      return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
+      return `${count} ${interval.label}${
+        count > 1 ? "s" : ""
+      } ago`;
     }
   }
+
   return "Just now";
 };
 
+/* =========================================================
+   SECTION HEADER
+========================================================= */
 
-// --- MAIN PAGE ---
+const SectionHeader = ({
+  eyebrow,
+  title,
+  icon: Icon,
+}) => {
+  return (
+    <div className="mb-6">
+      <div className="mb-2 flex items-center gap-2 text-[#3F7A5B]">
+        {Icon && <Icon size={15} strokeWidth={1.8} />}
+
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em]">
+          {eyebrow}
+        </span>
+      </div>
+
+      <h2 className="text-2xl font-semibold tracking-[-0.025em] text-[#141F19]">
+        {title}
+      </h2>
+    </div>
+  );
+};
+
+/* =========================================================
+   MAIN
+========================================================= */
 
 export default function AiToolDetails() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
+  const {
+    token,
+    backendUrl,
+  } = useContext(AIContext);
 
-  const { getAIToolsData, token, backendUrl } = useContext(AIContext);
-  
-
-
-  // const [toolData, setToolData] = useState(null);
   const [toolData, setToolData] = useState(null);
-  const [AIToolsData, setAiallData] = useState([]);
 
   const [isFavorite, setIsFavorite] = useState(false);
-const [isSaved, setIsSaved] = useState(false);
-
-
-const toggleFavorite = async () => {
-  try {
-    const res = await axios.post(
-      `${backendUrl}/api/user/toggle-favorite`,
-      { toolId: id },
-      { headers: { token: token } }
-    );
-
-    setIsFavorite(res.data.isFavorite);
-
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-  }
-};
-
-const toggleSave = async () => {
-  try {
-    const res = await axios.post(
-      `${backendUrl}/api/user/toggle-save`,
-      { toolId: id },
-      { headers: { token: token } }
-    );
-
-    setIsSaved(res.data.isSaved);
-
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-  }
-};
-
-
-  useEffect(() => {
-    if (!id || !token) return;
-
-    const AiData = async () => {
-      try {
-        const res = await axios.post(
-          `${backendUrl}/api/user/get-AiTool`,
-          { toolId: id },
-          { headers: { token } },
-        );
-
-        // console.log("API RESPONSE:", res.data);
-        // setAiallData(res.data.data);
-        setToolData(res.data.data);
-
-        setReviews(res.data.data.reviews || []);
-
-        setIsFavorite(res.data.data.isFavorite || false);
-      setIsSaved(res.data.data.isSaved || false);
-
-      } catch (error) {
-        console.error(error.response?.data || error.message);
-      }
-    };
-
-    AiData();
-  }, [token]);
-
-  
-  const tool = AIToolsData;
-
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const [userReview, setUserReview] = useState({ rating: 5, comment: "" });
-  const navigate = useNavigate();
+  const [isSaved, setIsSaved] = useState(false);
 
   const [reviews, setReviews] = useState([]);
 
-  const { id } = useParams();
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+
+  const [userReview, setUserReview] = useState({
+    rating: 5,
+    comment: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  /* =========================================================
+     FETCH TOOL
+  ========================================================= */
 
   useEffect(() => {
-    getAIToolsData();
-  }, []);
+    if (!id || !token || !backendUrl) return;
+
+    const fetchTool = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axios.post(
+          `${backendUrl}/api/user/get-AiTool`,
+          {
+            toolId: id,
+          },
+          {
+            headers: {
+              token,
+            },
+          }
+        );
+
+        const data = res.data?.data;
+
+        setToolData(data || null);
+        setReviews(data?.reviews || []);
+        setIsFavorite(data?.isFavorite || false);
+        setIsSaved(data?.isSaved || false);
+      } catch (error) {
+        console.error(
+          error.response?.data || error.message
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTool();
+  }, [id, token, backendUrl]);
+
+  /* =========================================================
+     SCROLL TOP
+  ========================================================= */
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "instant",
+    });
+  }, [id]);
+
+  /* =========================================================
+     SAVE
+  ========================================================= */
+
+  const toggleSave = async () => {
+    if (!token || !id || saving) return;
+
+    try {
+      setSaving(true);
+
+      const res = await axios.post(
+        `${backendUrl}/api/user/toggle-save`,
+        {
+          toolId: id,
+        },
+        {
+          headers: {
+            token,
+          },
+        }
+      );
+
+      setIsSaved(res.data?.isSaved ?? !isSaved);
+    } catch (error) {
+      console.error(
+        error.response?.data || error.message
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* =========================================================
+     SHARE
+  ========================================================= */
 
   const handleShare = async () => {
+    if (!toolData) return;
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Check out ${toolData.name} on Pandas AI`,
+          title: `Check out ${toolData.name}`,
           text: toolData.whatItDoes,
-          url: window.location.href, // Current page URL
+          url: window.location.href,
         });
-        
       } catch (error) {
-        
+        // User cancelled share.
       }
     } else {
-      // Fallback: Agar browser share support nahi karta to URL copy ho jayega
-      navigator.clipboard.writeText(window.location.href);
-      alert(
-        "Link copied to clipboard! (Your browser doesn't support direct sharing)",
+      try {
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        alert("Link copied to clipboard.");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  /* =========================================================
+     REVIEW
+  ========================================================= */
+
+  const submitReview = async (e) => {
+    e.preventDefault();
+
+    if (!userReview.comment.trim()) return;
+
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/user/add-review`,
+        {
+          toolId: id,
+          rating: userReview.rating,
+          comment: userReview.comment.trim(),
+        },
+        {
+          headers: {
+            token,
+          },
+        }
+      );
+
+      const newReview = {
+        ...res.data.review,
+        date: new Date(),
+      };
+
+      setReviews((prev) => [
+        newReview,
+        ...prev,
+      ]);
+
+      setUserReview({
+        rating: 5,
+        comment: "",
+      });
+
+      setIsReviewOpen(false);
+    } catch (error) {
+      console.error(
+        error.response?.data || error.message
       );
     }
   };
- const submitReview = async (e) => {
-  e.preventDefault();
-  if (!userReview.comment.trim()) return;
 
-  try {
-    const res = await axios.post(
-      `${backendUrl}/api/user/add-review`,
-      {
-        toolId: id,
-        rating: userReview.rating,
-        comment: userReview.comment,
-      },
-      {
-        headers: { token },
-      }
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] pt-28">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="animate-pulse">
+            <div className="mb-8 h-4 w-32 rounded bg-[#E3E8E3]" />
+
+            <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+              <div className="rounded-[20px] border border-[#E3E8E3] bg-white p-8">
+                <div className="h-10 w-1/2 rounded bg-[#E8ECE8]" />
+                <div className="mt-6 h-5 w-3/4 rounded bg-[#EEF1EE]" />
+                <div className="mt-10 h-64 rounded-[16px] bg-[#F0F2F0]" />
+              </div>
+
+              <div className="h-72 rounded-[20px] border border-[#E3E8E3] bg-white" />
+            </div>
+          </div>
+        </div>
+      </div>
     );
-
-    // ✅ UI instant update
-    setReviews([
-      {
-        ...res.data.review,
-        date: "Just now",
-      },
-      ...reviews,
-    ]);
-
-    setUserReview({ rating: 5, comment: "" });
-    setIsReviewOpen(false);
-  } catch (error) {
-    console.error(error.response?.data || error.message);
   }
-};
 
-useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  /* =========================================================
+     NOT FOUND
+  ========================================================= */
 
+  if (!toolData) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] px-6 pt-32">
+        <div className="mx-auto max-w-xl text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7F1EA] text-[#3F7A5B]">
+            <Info size={24} />
+          </div>
+
+          <h1 className="mt-5 text-2xl font-semibold text-[#141F19]">
+            Tool not found
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-[#8A988E]">
+            We couldn't find the AI tool you're looking for.
+          </p>
+
+          <button
+            onClick={() => navigate("/Ai-Tools")}
+            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#3F7A5B] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#336249]"
+          >
+            <ArrowLeft size={16} />
+            Back to tools
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const categories = Array.isArray(toolData.category)
+    ? toolData.category
+    : [];
+
+  const technologies = Array.isArray(
+    toolData.techRelevance
+  )
+    ? toolData.techRelevance
+    : [];
+
+  const howToUse = Array.isArray(toolData.howToUse)
+    ? toolData.howToUse
+    : [];
+
+  const rating =
+    typeof toolData.rating === "number"
+      ? toolData.rating.toFixed(1)
+      : "—";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20 pt-20">
-      {/* NAVIGATION */}
-      <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          to={"/Ai-Tools"}
-          className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors group"
-        >
-          <ArrowLeft
-            size={18}
-            className="group-hover:-translate-x-1 transition-transform"
-          />{" "}
-          Back to Pandas
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Powered by Pandas AI
-          </span>
+    <div className="min-h-screen bg-[#FAFAF8] pb-24 pt-24 text-[#141F19]">
+      {/* =====================================================
+          TOP NAV
+      ====================================================== */}
+
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="flex items-center justify-between border-b border-[#E3E8E3] pb-5">
+          <button
+            onClick={() => navigate(-1)}
+            className="group inline-flex items-center gap-2 text-sm font-medium text-[#4B5C53] transition-colors hover:text-[#3F7A5B]"
+          >
+            <ArrowLeft
+              size={16}
+              className="transition-transform group-hover:-translate-x-1"
+            />
+
+            Back to tools
+          </button>
+
+          <div className="hidden items-center gap-2 text-xs text-[#8A988E] sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#3F7A5B]" />
+            Curated AI directory
+          </div>
         </div>
-      </nav>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-2 space-y-10">
-          {/* HEADER SECTION */}
-          <section className="bg-white dark:bg-slate-900 rounded-[32px] p-6 md:p-10 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full -mr-10 -mt-10"></div>
+      {/* =====================================================
+          MAIN
+      ====================================================== */}
 
-            <div className="flex flex-col md:flex-row gap-10 relative z-10">
-              <div className="w-full md:w-72 h-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
-                <img
-                  src={toolData?.image}
-                  alt={toolData?.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+      <main className="mx-auto mt-8 max-w-6xl px-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
 
-              <div className="flex-1 space-y-5">
-                <div className="flex flex-wrap items-center gap-4">
-                  <h1 className="text-4xl font-black text-slate-900 dark:text-white leading-none">
-                    {toolData?.name}
-                  </h1>
-                  <div className="flex items-center gap-1.5 bg-amber-400/10 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full border border-amber-200/50">
-                    <Star size={16} fill="currentColor" />
-                    <span className="text-sm font-black">
-                      {toolData?.rating?.toFixed(1)}
-                    </span>
-                  </div>
+          {/* =================================================
+              LEFT COLUMN
+          ================================================= */}
+
+          <div className="space-y-8">
+
+            {/* =================================================
+                TOOL HEADER
+            ================================================= */}
+
+            <section className="overflow-hidden rounded-[20px] border border-[#E3E8E3] bg-white">
+              <div className="p-6 sm:p-8">
+
+                {/* Breadcrumb / label */}
+
+                <div className="mb-7 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A988E]">
+                  <span>AI Tool</span>
+                  <span className="text-[#C5CDC7]">/</span>
+                  <span className="text-[#3F7A5B]">
+                    {categories[0] || "Directory"}
+                  </span>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="emerald">{toolData?.pricing}</Badge>
-                  {toolData?.category.map((cat, i) => (
-                    <Badge key={i} variant="indigo">
-                      {cat}
-                    </Badge>
+                <div className="grid gap-8 md:grid-cols-[180px_minmax(0,1fr)]">
+
+                  {/* IMAGE */}
+
+                  <div className="h-44 overflow-hidden rounded-[16px] border border-[#E3E8E3] bg-[#F4F6F4]">
+                    {toolData.image ? (
+                      <img
+                        src={toolData.image}
+                        alt={toolData.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[#8A988E]">
+                        <Sparkles size={28} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CONTENT */}
+
+                  <div className="min-w-0">
+
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <h1 className="text-3xl font-semibold tracking-[-0.035em] text-[#141F19] sm:text-4xl">
+                          {toolData.name}
+                        </h1>
+
+                        <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#4B5C53]">
+                          {toolData.whatItDoes}
+                        </p>
+                      </div>
+
+                      {/* RATING */}
+
+                      <div className="flex shrink-0 items-center gap-2 rounded-xl border border-[#E3E8E3] bg-[#FAFAF8] px-3 py-2">
+                        <Star
+                          size={15}
+                          fill="currentColor"
+                          className="text-[#3F7A5B]"
+                        />
+
+                        <span className="text-sm font-semibold text-[#141F19]">
+                          {rating}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* BADGES */}
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {toolData.pricing && (
+                        <Badge variant="accent">
+                          {toolData.pricing}
+                        </Badge>
+                      )}
+
+                      {categories.map((cat, index) => (
+                        <Badge
+                          key={`${cat}-${index}`}
+                          variant="neutral"
+                        >
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* ACTIONS */}
+
+                    <div className="mt-7 flex flex-wrap gap-2.5">
+
+                      {toolData.officialLink && (
+                        <a
+                          href={toolData.officialLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#3F7A5B] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#336249]"
+                        >
+                          Visit website
+                          <ExternalLink size={15} />
+                        </a>
+                      )}
+
+                      <button
+                        onClick={toggleSave}
+                        disabled={saving}
+                        className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+                          isSaved
+                            ? "border-[#BFD3C5] bg-[#E7F1EA] text-[#3F7A5B]"
+                            : "border-[#E3E8E3] bg-white text-[#4B5C53] hover:border-[#BFD3C5] hover:text-[#3F7A5B]"
+                        }`}
+                      >
+                        <Save
+                          size={16}
+                          fill={
+                            isSaved
+                              ? "currentColor"
+                              : "none"
+                          }
+                        />
+
+                        {isSaved ? "Saved" : "Save"}
+                      </button>
+
+                      <button
+                        onClick={handleShare}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E3E8E3] bg-white px-4 py-3 text-sm font-semibold text-[#4B5C53] transition-colors hover:border-[#BFD3C5] hover:text-[#3F7A5B]"
+                      >
+                        <Share2 size={16} />
+                        Share
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* META BAR */}
+
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#E3E8E3] bg-[#FAFAF8] px-6 py-4 text-xs text-[#8A988E] sm:px-8">
+                <div className="flex items-center gap-2">
+                  <Tag size={14} />
+                  {categories.length || 0} categories
+                </div>
+
+                <div className="h-3 w-px bg-[#D9E0DA]" />
+
+                <div className="flex items-center gap-2">
+                  <Clock3 size={14} />
+                  Compare before choosing
+                </div>
+              </div>
+            </section>
+
+            {/* =================================================
+                WHAT IT DOES
+            ================================================= */}
+
+            <section className="rounded-[20px] border border-[#E3E8E3] bg-white p-6 sm:p-8">
+              <SectionHeader
+                eyebrow="Overview"
+                title="What it does"
+                icon={Info}
+              />
+
+              <p className="max-w-3xl text-[15px] leading-8 text-[#4B5C53]">
+                {toolData.whatItDoes ||
+                  "Information about this tool is currently unavailable."}
+              </p>
+            </section>
+
+            {/* =================================================
+                HOW TO USE
+            ================================================= */}
+
+            {howToUse.length > 0 && (
+              <section>
+                <SectionHeader
+                  eyebrow="Getting started"
+                  title="How to use it"
+                  icon={Sparkles}
+                />
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {howToUse.map((step, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{
+                        opacity: 0,
+                        y: 8,
+                      }}
+                      whileInView={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      viewport={{
+                        once: true,
+                        amount: 0.2,
+                      }}
+                      transition={{
+                        duration: 0.35,
+                        delay: index * 0.04,
+                      }}
+                      className="group rounded-[16px] border border-[#E3E8E3] bg-white p-5 transition-colors hover:border-[#C8D8CD]"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E7F1EA] text-xs font-bold text-[#3F7A5B]">
+                          {String(index + 1).padStart(
+                            2,
+                            "0"
+                          )}
+                        </div>
+
+                        <p className="pt-1 text-sm font-medium leading-6 text-[#4B5C53]">
+                          {step}
+                        </p>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
+              </section>
+            )}
 
-                <div className="flex flex-wrap gap-3 pt-6">
-                  <a
-                    href={toolData?.officialLink}
-                    target="_blank"
-                    className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
-                  >
-                    Visit Website <ExternalLink size={20} />
-                  </a>
-                  {/* <button
-  onClick={toggleFavorite}
-  className={`p-4 rounded-2xl border transition-all ${
-    isFavorite
-      ? "bg-pink-50 border-pink-300 text-pink-500"
-      : "bg-white border-slate-300 text-slate-400"
-  }`}
->
-  <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
-</button> */}
+            {/* =================================================
+                BENEFITS / LIMITATIONS
+            ================================================= */}
 
-                  <button
-  onClick={toggleSave}
-  className={`p-4 rounded-2xl border transition-all ${
-    isSaved
-      ? "bg-indigo-50 border-indigo-300 text-indigo-600"
-      : "bg-white border-slate-300 text-slate-400"
-  }`}
->
-  <Save size={24} fill={isSaved ? "currentColor" : "none"} />
-</button>
+            <section className="grid gap-4 md:grid-cols-2">
 
-                  <button
-                    onClick={handleShare}
-                    title="Share this tool"
-                    className="p-4 rounded-2xl border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-colors active:scale-90"
-                  >
-                    <Share2 size={24} />
-                  </button>
+              {/* BENEFITS */}
+
+              <div className="rounded-[20px] border border-[#DDE9E0] bg-[#F6FAF7] p-6">
+                <div className="mb-5 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E7F1EA] text-[#3F7A5B]">
+                    <CheckCircle2 size={16} />
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-[#141F19]">
+                    What stands out
+                  </h3>
                 </div>
-              </div>
-            </div>
-          </section>
 
-          {/* WHAT IT DOES */}
-          <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                <Info className="text-indigo-600" size={20} />
+                <ul className="space-y-3">
+                  {[
+                    "Useful for reducing repetitive work",
+                    "Designed around practical workflows",
+                    "Can fit into an existing toolkit",
+                  ].map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 text-sm leading-6 text-[#4B5C53]"
+                    >
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#3F7A5B]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              What It Does
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg font-medium">
-              {toolData?.whatItDoes}
-            </p>
-          </section>
 
-          {/* HOW TO USE */}
-          <section className="space-y-6">
-            <h2 className="text-xl font-bold px-2">How to Use</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {toolData?.howToUse.map((step, i) => (
-                <div
-                  key={i}
-                  className="group flex items-start gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 transition-colors"
-                >
-                  <span className="text-3xl font-black text-indigo-600/20 group-hover:text-indigo-600/40 transition-colors leading-none">
-                    {i + 1}
-                  </span>
-                  <p className="font-bold text-slate-700 dark:text-slate-300 pt-1">
-                    {step}
+              {/* LIMITATIONS */}
+
+              <div className="rounded-[20px] border border-[#E3E8E3] bg-white p-6">
+                <div className="mb-5 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F4F6F4] text-[#8A988E]">
+                    <AlertCircle size={16} />
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-[#141F19]">
+                    Keep in mind
+                  </h3>
+                </div>
+
+                <ul className="space-y-3">
+                  {[
+                    "Results can vary by workflow",
+                    "Some features may require a paid plan",
+                  ].map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-3 text-sm leading-6 text-[#8A988E]"
+                    >
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#AAB4AD]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
+            {/* =================================================
+                REVIEWS
+            ================================================= */}
+
+            <section className="rounded-[20px] border border-[#E3E8E3] bg-white p-6 sm:p-8">
+
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E3E8E3] pb-6">
+
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold tracking-[-0.025em] text-[#141F19]">
+                      User reviews
+                    </h2>
+
+                    <span className="rounded-lg bg-[#F4F6F4] px-2 py-1 text-xs font-semibold text-[#8A988E]">
+                      {reviews.length}
+                    </span>
+                  </div>
+
+                  <p className="mt-1 text-sm text-[#8A988E]">
+                    Experiences from people who have tried this tool.
                   </p>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          {/* PROS & CONS */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-3xl p-8">
-              <h3 className="text-emerald-700 dark:text-emerald-400 font-black mb-6 flex items-center gap-2 uppercase tracking-widest text-xs">
-                <CheckCircle2 size={18} /> Top Benefits
-              </h3>
-              <ul className="space-y-4">
-                {[
-                  "Saves 80% design time",
-                  "Seamless team collaboration",
-                  "Export in multiple formats",
-                ].map((pro, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-sm font-bold text-emerald-900/70 dark:text-emerald-300/70"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>{" "}
-                    {pro}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8">
-              <h3 className="text-slate-500 dark:text-slate-400 font-black mb-6 flex items-center gap-2 uppercase tracking-widest text-xs">
-                <AlertCircle size={18} /> Limitations
-              </h3>
-              <ul className="space-y-4">
-                {["Occasional AI glitches", "Premium price for teams"].map(
-                  (con, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-3 text-sm font-bold text-slate-400"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>{" "}
-                      {con}
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </section>
-        </div>
-
-        {/* RIGHT SIDEBAR */}
-        <aside className="space-y-8">
-          <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800">
-            <h3 className="font-black text-xs uppercase tracking-widest text-slate-400 mb-6">
-              Technologies
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {toolData?.techRelevance.map((tech, i) => (
-                <Badge key={i} variant="slate">
-                  {tech}
-                </Badge>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <h3 className="font-black text-xs uppercase tracking-widest text-slate-400 px-2 mb-4">
-              Official Resources
-            </h3>
-            {/* Yahan aapke keys mismatch the, unhe toolData se connect kar diya hai */}
-            <ResourceLink
-              icon={BookOpen}
-              label="Docs & API"
-              href={toolData?.docLink}
-            />
-            <ResourceLink
-              icon={PlayCircle}
-              label="Video Tutorials"
-              href={toolData?.tutorialLink}
-            />
-            <ResourceLink
-              icon={Github}
-              label="Source Code"
-              href={toolData?.githubLink}
-            />
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <h2 className="text-2xl font-black flex items-center gap-2">
-  User Reviews
-  <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-black px-2 py-1 rounded-full">
- {reviews?.length || 0}
-
-</span>
-
-</h2>
-
-              <button
-                onClick={() => setIsReviewOpen(!isReviewOpen)}
-                className="text-sm font-bold text-indigo-600 hover:underline"
-              >
-                {isReviewOpen ? "Cancel" : "Write a Review"}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {isReviewOpen && (
-                <motion.form
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  onSubmit={submitReview}
-                  className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-indigo-500/20 space-y-4 shadow-lg overflow-hidden"
+                <button
+                  onClick={() =>
+                    setIsReviewOpen(!isReviewOpen)
+                  }
+                  className="text-sm font-semibold text-[#3F7A5B] transition-colors hover:text-[#336249]"
                 >
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <Star
-                        key={num}
-                        size={24}
-                        className={`cursor-pointer transition-colors ${
-                          num <= userReview.rating
-                            ? "text-amber-400 fill-amber-400"
-                            : "text-slate-300"
-                        }`}
-                        onClick={() =>
-                          setUserReview({ ...userReview, rating: num })
+                  {isReviewOpen
+                    ? "Cancel"
+                    : "Write a review"}
+                </button>
+              </div>
+
+              {/* REVIEW FORM */}
+
+              <AnimatePresence>
+                {isReviewOpen && (
+                  <motion.form
+                    initial={{
+                      opacity: 0,
+                      height: 0,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      height: "auto",
+                    }}
+                    exit={{
+                      opacity: 0,
+                      height: 0,
+                    }}
+                    onSubmit={submitReview}
+                    className="overflow-hidden"
+                  >
+                    <div className="my-6 rounded-[16px] border border-[#D9E5DC] bg-[#F7FAF8] p-5">
+
+                      <div className="mb-5">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#8A988E]">
+                          Your rating
+                        </p>
+
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map(
+                            (number) => (
+                              <button
+                                key={number}
+                                type="button"
+                                onClick={() =>
+                                  setUserReview({
+                                    ...userReview,
+                                    rating: number,
+                                  })
+                                }
+                                className="p-1"
+                              >
+                                <Star
+                                  size={21}
+                                  className={
+                                    number <=
+                                    userReview.rating
+                                      ? "text-[#3F7A5B]"
+                                      : "text-[#C7CEC9]"
+                                  }
+                                  fill={
+                                    number <=
+                                    userReview.rating
+                                      ? "currentColor"
+                                      : "none"
+                                  }
+                                />
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      <textarea
+                        required
+                        value={userReview.comment}
+                        onChange={(e) =>
+                          setUserReview({
+                            ...userReview,
+                            comment: e.target.value,
+                          })
                         }
+                        placeholder="What did you think about this tool?"
+                        className="min-h-[120px] w-full resize-none rounded-xl border border-[#E3E8E3] bg-white p-4 text-sm text-[#141F19] outline-none transition-all placeholder:text-[#A0AAA3] focus:border-[#3F7A5B] focus:ring-4 focus:ring-[#E7F1EA]"
                       />
-                    ))}
-                  </div>
-                  <textarea
-                    required
-                    placeholder="Write your experience..."
-                    className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-none outline-none ring-2 ring-transparent focus:ring-indigo-500 transition-all"
-                    value={userReview.comment}
-                    onChange={(e) =>
-                      setUserReview({ ...userReview, comment: e.target.value })
-                    }
-                  />
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors"
-                  >
-                    Submit Review <Send size={18} />
-                  </button>
-                </motion.form>
-              )}
-            </AnimatePresence>
 
-            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {reviews.map((rev) => (
-                <div
-                  key={rev.id}
-                  className="bg-white dark:bg-slate-900 p-6 rounded-[24px] border border-slate-200 dark:border-slate-800 flex gap-4"
-                >
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-400">
-                    <User />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-bold">{rev.name}</h4>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">
-                        {timeAgo(rev.date)}
-                      </span>
+                      <button
+                        type="submit"
+                        className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#3F7A5B] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#336249]"
+                      >
+                        Submit review
+                        <Send size={15} />
+                      </button>
                     </div>
-                    <div className="flex text-amber-400 my-1">
-                      {[...Array(Math.floor(rev.rating))].map((_, i) => (
-  <Star key={i} size={12} fill="currentColor" />
-))}
-                    </div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">
-                      {rev.comment}
+                  </motion.form>
+                )}
+              </AnimatePresence>
+
+              {/* REVIEWS */}
+
+              <div className="mt-6 space-y-3">
+                {reviews.length === 0 ? (
+                  <div className="rounded-[16px] border border-dashed border-[#DCE3DE] bg-[#FAFAF8] px-6 py-10 text-center">
+                    <User
+                      size={24}
+                      className="mx-auto text-[#AAB4AD]"
+                    />
+
+                    <p className="mt-3 text-sm font-medium text-[#4B5C53]">
+                      No reviews yet.
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#8A988E]">
+                      Be the first to share your experience.
                     </p>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ) : (
+                  reviews.map((review, index) => (
+                    <div
+                      key={
+                        review.id ||
+                        review._id ||
+                        index
+                      }
+                      className="rounded-[16px] border border-[#E3E8E3] bg-white p-5"
+                    >
+                      <div className="flex items-start gap-4">
 
-          <button className="w-full flex items-center justify-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-tighter hover:text-red-500 transition-colors py-4">
-            <Flag size={12} /> Incorrect Data? Report Here
-          </button>
-        </aside>
-      </main>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E7F1EA] text-[#3F7A5B]">
+                          <User size={17} />
+                        </div>
 
-      {/* SIMILAR TOOLS SECTION */}
-      {/* <section className="max-w-7xl mx-auto px-6 mt-24">
-        <h2 className="text-2xl font-black mb-10 text-slate-900 dark:text-white">
-          You might also like
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {Array.isArray(AIToolsData) &&
-            AIToolsData.slice(0, 4).map((item, i) => (
-              <motion.div
-                key={item.id || i}
-                onClick={() => {
-                  navigate(`/Ai-Tools/${item._id}`);
-                  window.scrollTo({ top: 0, behavior: "smooth" }); // Page ko upar le jayega smoothly
-                }}
-                whileHover={{ y: -8 }}
-                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] overflow-hidden shadow-sm cursor-pointer hover:shadow-xl transition-all duration-300"
-              >
-                <div className="h-40 overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                        <div className="min-w-0 flex-1">
+
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold text-[#141F19]">
+                              {review.name ||
+                                "Anonymous user"}
+                            </h4>
+
+                            <span className="text-[11px] text-[#8A988E]">
+                              {timeAgo(
+                                review.date
+                              )}
+                            </span>
+                          </div>
+
+                          <div className="mt-2 flex items-center gap-0.5 text-[#3F7A5B]">
+                            {[
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                            ].map((star) => (
+                              <Star
+                                key={star}
+                                size={12}
+                                fill={
+                                  star <=
+                                  Math.floor(
+                                    review.rating || 0
+                                  )
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                              />
+                            ))}
+                          </div>
+
+                          <p className="mt-3 text-sm leading-6 text-[#4B5C53]">
+                            {review.comment}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* =================================================
+              RIGHT SIDEBAR
+          ================================================= */}
+
+          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+
+            {/* QUICK SUMMARY */}
+
+            <section className="rounded-[20px] border border-[#E3E8E3] bg-white p-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A988E]">
+                Quick summary
+              </p>
+
+              <div className="mt-5 space-y-4">
+
+                <div className="flex items-center justify-between border-b border-[#EEF1EE] pb-4">
+                  <span className="text-sm text-[#8A988E]">
+                    Pricing
+                  </span>
+
+                  <span className="text-sm font-semibold text-[#141F19]">
+                    {toolData.pricing || "—"}
+                  </span>
                 </div>
-                <div className="p-5">
-                  <h4 className="font-bold text-lg mb-1 group-hover:text-indigo-600 transition-colors">
-                    {item.name}
-                  </h4>
-                  <div className="flex items-center gap-1 text-xs font-black text-amber-500">
-                    <Star size={14} fill="currentColor" /> {item.rating}
-                  </div>
+
+                <div className="flex items-center justify-between border-b border-[#EEF1EE] pb-4">
+                  <span className="text-sm text-[#8A988E]">
+                    Rating
+                  </span>
+
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-[#141F19]">
+                    <Star
+                      size={14}
+                      fill="currentColor"
+                      className="text-[#3F7A5B]"
+                    />
+
+                    {rating}
+                  </span>
                 </div>
-              </motion.div>
-            ))}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#8A988E]">
+                    Reviews
+                  </span>
+
+                  <span className="text-sm font-semibold text-[#141F19]">
+                    {reviews.length}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* TECHNOLOGIES */}
+
+            {technologies.length > 0 && (
+              <section className="rounded-[20px] border border-[#E3E8E3] bg-white p-6">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A988E]">
+                  Technologies
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {technologies.map(
+                    (technology, index) => (
+                      <Badge
+                        key={`${technology}-${index}`}
+                        variant="neutral"
+                      >
+                        {technology}
+                      </Badge>
+                    )
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* OFFICIAL RESOURCES */}
+
+            <section className="rounded-[20px] border border-[#E3E8E3] bg-white p-6">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8A988E]">
+                Official resources
+              </p>
+
+              <div className="space-y-2">
+                <ResourceLink
+                  icon={BookOpen}
+                  label="Documentation & API"
+                  href={toolData.docLink}
+                />
+
+                <ResourceLink
+                  icon={PlayCircle}
+                  label="Video tutorials"
+                  href={toolData.tutorialLink}
+                />
+
+                <ResourceLink
+                  icon={Github}
+                  label="Source code"
+                  href={toolData.githubLink}
+                />
+              </div>
+            </section>
+
+            {/* REPORT */}
+
+            <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-transparent px-4 py-3 text-xs font-medium text-[#8A988E] transition-colors hover:border-[#E3E8E3] hover:bg-white hover:text-[#3F7A5B]">
+              <Flag size={13} />
+              Report incorrect information
+            </button>
+          </aside>
         </div>
-      </section> */}
+      </main>
     </div>
   );
 }
