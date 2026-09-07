@@ -1,36 +1,92 @@
 import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 
 export default function Loader() {
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8] px-6">
       <motion.div
-        initial={{ scale: 0.95, opacity: 0.7 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{
-          repeat: Infinity,
-          repeatType: "reverse",
-          duration: 0.8,
-        }}
-        className="flex flex-col items-center gap-4 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:scale-[1.03] transition-transform duration-300"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="
+          flex flex-col items-center justify-center
+          w-full max-w-sm
+          rounded-[20px]
+          border border-[#E3E8E3]
+          bg-white
+          px-8 py-9
+          shadow-[0_8px_30px_rgba(20,31,25,0.05)]
+        "
       >
-        {/* Circular Gradient Spinner */}
-        <motion.div
-          className="w-16 h-16 rounded-full border-4 border-t-indigo-500 border-b-purple-500 border-l-blue-400 border-r-indigo-300"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        >
-          {/* Inner pulse */}
+        {/* Logo / Search Mark */}
+        <div className="relative flex h-14 w-14 items-center justify-center">
+          
+          {/* Outer rotating ring */}
           <motion.div
-            className="w-full h-full rounded-full bg-indigo-100 dark:bg-indigo-900 opacity-30"
-            animate={{ scale: [0.8, 1, 0.8] }}
-            transition={{ repeat: Infinity, duration: 1 }}
+            className="
+              absolute inset-0
+              rounded-full
+              border-[2px]
+              border-[#E7F1EA]
+              border-t-[#3F7A5B]
+            "
+            animate={{ rotate: 360 }}
+            transition={{
+              repeat: Infinity,
+              duration: 1,
+              ease: "linear",
+            }}
           />
-        </motion.div>
 
-        {/* Loading Text */}
-        <p className="text-indigo-700 dark:text-indigo-400 font-semibold text-lg">
-          Loading, please wait...
-        </p>
+          {/* Inner icon container */}
+          <motion.div
+            animate={{
+              scale: [1, 1.04, 1],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 1.4,
+              ease: "easeInOut",
+            }}
+            className="
+              flex h-10 w-10
+              items-center justify-center
+              rounded-xl
+              bg-[#E7F1EA]
+              text-[#3F7A5B]
+            "
+          >
+            <Search
+              size={19}
+              strokeWidth={1.8}
+            />
+          </motion.div>
+        </div>
+
+        {/* Loading text */}
+        <div className="mt-6 text-center">
+          <h2 className="text-sm font-semibold text-[#141F19]">
+            Finding the right tools
+          </h2>
+
+          <p className="mt-1.5 text-xs leading-5 text-[#8A988E]">
+            Curating useful AI tools and resources...
+          </p>
+        </div>
+
+        {/* Small progress indicator */}
+        <div className="mt-6 h-1 w-32 overflow-hidden rounded-full bg-[#E7F1EA]">
+          <motion.div
+            className="h-full rounded-full bg-[#3F7A5B]"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{
+              repeat: Infinity,
+              duration: 1.2,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
       </motion.div>
     </div>
   );
