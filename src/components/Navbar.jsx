@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect } from "react";
 import {
   UserPlus,
@@ -8,9 +9,9 @@ import {
   LogOut,
   BookmarkCheck,
   Search,
-  Command
+  Command,
+  Plus,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import { UserContext } from "../Context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
 import SearchPage from "./SearchPage.jsx";
@@ -22,7 +23,13 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const navigate = useNavigate();
-  const { isLoggedIn, setIsLoggedIn, userData, setToken } = useContext(UserContext);
+
+  const {
+    isLoggedIn,
+    setIsLoggedIn,
+    userData,
+    setToken,
+  } = useContext(UserContext);
 
   const handleLogout = () => {
     setToken("");
@@ -33,230 +40,526 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsSearchOpen(true);
+        setIsMobileMenuOpen(false);
       }
-      if (e.key === 'Escape') setIsSearchOpen(false);
+
+      if (e.key === "Escape") {
+        setIsSearchOpen(false);
+        setShowProfileMenu(false);
+        setIsMobileMenuOpen(false);
+      }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
-  // Close mobile menu when navigating
   const closeAll = () => {
     setIsMobileMenuOpen(false);
     setShowProfileMenu(false);
   };
 
+  const openSearch = () => {
+    setIsSearchOpen(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const navLinks = [
+    {
+      name: "Discover",
+      path: "/Ai-Tools",
+    },
+    {
+      name: "Categories",
+      path: "/Category",
+    },
+    {
+      name: "Resources",
+      path: "/Resources",
+    },
+    {
+      name: "Compare",
+      path: "/Compare-tools",
+    },
+  ];
+
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-[100] border-b border-white/[0.05] bg-[#030508]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-4">
-          
-          {/* LOGO */}
-          <div
-  onClick={() => navigate("/")}
-  className="flex items-center gap-2 md:gap-3 group cursor-pointer shrink-0"
->
-  <img
-    src="/logo-img.png"
-    alt="Pandas Logo"
-    className="h-8 md:h-9 w-auto object-contain transition-transform group-hover:scale-105"
-  />
-</div>
+      {/* =========================================================
+          NAVBAR
+      ========================================================== */}
+      <nav className="fixed left-0 top-0 z-[100] w-full border-b border-[#E3E8E3] bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:h-[72px] lg:px-8">
 
-          {/* CENTRAL SEARCH PILL (Desktop) */}
-          <div className="hidden md:flex flex-1 justify-center max-w-md">
-            <button 
-              onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center justify-between px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-full hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-300 group"
+          {/* LOGO */}
+          <button
+            type="button"
+            onClick={() => {
+              navigate("/");
+              closeAll();
+            }}
+            aria-label="Go to Pandas home"
+            className="group flex shrink-0 items-center"
+          >
+            <img
+              src="/logo-img.png"
+              alt="Pandas"
+              className="h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.03] md:h-9"
+            />
+          </button>
+
+          {/* DESKTOP NAVIGATION */}
+          <div className="hidden items-center gap-1 lg:flex">
+            {navLinks.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="rounded-lg px-3 py-2 text-sm font-medium text-[#4B5C53] transition-colors duration-150 hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* DESKTOP SEARCH */}
+          <div className="hidden flex-1 justify-center px-4 md:flex">
+            <button
+              type="button"
+              onClick={openSearch}
+              aria-label="Open search"
+              className="group flex h-10 w-full max-w-[360px] items-center justify-between rounded-lg border border-[#E3E8E3] bg-[#FAFAF8] px-3.5 transition-all duration-200 hover:border-[#C9D4CC] hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2"
             >
-              <div className="flex items-center gap-3 text-slate-400">
-                <Search size={16} className="group-hover:text-indigo-400 transition-colors" />
-                <span className="text-sm font-medium tracking-wide">Quick Search...</span>
-              </div>
-              <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                <Command size={12} className="text-slate-300" />
-                <span className="text-[10px] font-bold text-slate-300">K</span>
-              </div>
+              <span className="flex items-center gap-2.5 text-sm text-[#8A988E]">
+                <Search
+                  size={17}
+                  strokeWidth={1.8}
+                  className="transition-colors group-hover:text-[#3F7A5B]"
+                />
+                <span>Search tools and resouces</span>
+              </span>
+
+              <span className="hidden items-center gap-1 rounded-md border border-[#E3E8E3] bg-white px-1.5 py-1 text-[11px] font-medium text-[#8A988E] sm:flex">
+                <Command size={11} />
+                <span>K</span>
+              </span>
             </button>
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center gap-2 md:gap-6">
-            <div className="hidden lg:flex items-center gap-8">
-              {['Home', 'About', 'Contact'].map((item) => (
-                <Link 
-                  key={item} 
-                  to={item === 'Home' ? '/' : `/${item.toLowerCase()}`} 
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
 
-            <div className="h-4 w-[1px] bg-white/10 hidden lg:block" />
+            {/* MOBILE SEARCH */}
+            <button
+              type="button"
+              onClick={openSearch}
+              aria-label="Search"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#3F7A5B] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2 md:hidden"
+            >
+              <Search size={19} strokeWidth={1.8} />
+            </button>
 
-            {/* Auth & Search Toggle */}
-            <div className="flex items-center gap-2 md:gap-3">
-              <button onClick={() => setIsSearchOpen(true)} className="md:hidden p-2 text-slate-400 hover:text-white transition-colors">
-                <Search size={20} />
-              </button>
+            {/* ADD TOOL */}
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/Add-Tools");
+                closeAll();
+              }}
+              className="hidden items-center gap-2 rounded-lg border border-[#E3E8E3] bg-white px-3.5 py-2 text-sm font-semibold text-[#141F19] transition-all duration-200 hover:border-[#3F7A5B] hover:text-[#3F7A5B] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2 sm:flex"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Add Tool
+            </button>
 
-              {!isLoggedIn ? (
-                <button 
-                  onClick={() => navigate("/sign-up")} 
-                  className="bg-white text-black px-5 md:px-7 py-2 md:py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95"
-                >
-                  Join
-                </button>
-              ) : (
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowProfileMenu(!showProfileMenu)} 
-                    className="flex items-center gap-2 p-1 rounded-full bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-all"
-                  >
-                    <img src={userData.image} className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover" alt="Profile" />
-                    <ChevronDown size={14} className={`text-slate-500 mr-1 transition-transform ${showProfileMenu ? "rotate-180" : ""}`} />
-                  </button>
-
-                  <AnimatePresence>
-                    {showProfileMenu && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 mt-4 w-52 md:w-56 bg-[#0A0C10] border border-white/10 rounded-2xl shadow-2xl p-2 z-[110] backdrop-blur-3xl"
-                      >
-                        <button onClick={() => {navigate("/Deshboard"); closeAll();}} className="w-full flex items-center gap-3 px-3 py-3 text-[10px] font-black text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all uppercase tracking-widest">
-                          <LayoutDashboard size={14} /> Dashboard
-                        </button>
-                        <button onClick={() => {navigate("/BookMarks"); closeAll();}} className="w-full flex items-center gap-3 px-3 py-3 text-[10px] font-black text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all uppercase tracking-widest">
-                          <BookmarkCheck size={14} /> Bookmarks
-                        </button>
-                        <div className="my-2 border-t border-white/5" />
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-3 text-[10px] font-black text-red-500 hover:bg-red-500/10 rounded-xl transition-all uppercase tracking-widest">
-                          <LogOut size={14} /> Log Out
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Mobile Menu Toggle */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-                className="lg:hidden p-2 text-slate-400 hover:text-white z-[120]"
+            {/* AUTH / PROFILE */}
+            {!isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => navigate("/sign-up")}
+                className="flex items-center gap-2 rounded-lg bg-[#3F7A5B] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#336249] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2"
               >
-                {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                <UserPlus size={15} className="hidden sm:block" />
+                Sign up
               </button>
-            </div>
+            ) : (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowProfileMenu((prev) => !prev)}
+                  aria-expanded={showProfileMenu}
+                  aria-haspopup="menu"
+                  className="flex items-center gap-2 rounded-lg border border-[#E3E8E3] bg-white p-1 pr-2 transition-colors duration-150 hover:border-[#C9D4CC] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2"
+                >
+                  <img
+                    src={userData?.image}
+                    className="h-8 w-8 rounded-md object-cover"
+                    alt="Profile"
+                  />
+
+                  <ChevronDown
+                    size={15}
+                    className={`text-[#8A988E] transition-transform duration-200 ${
+                      showProfileMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                        y: 6,
+                        scale: 0.98,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: 6,
+                        scale: 0.98,
+                      }}
+                      transition={{
+                        duration: 0.16,
+                      }}
+                      role="menu"
+                      className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-[#E3E8E3] bg-white p-1.5 shadow-[0_4px_12px_rgba(20,31,25,0.06)]"
+                    >
+                      <div className="px-3 py-2">
+                        <p className="text-xs font-medium text-[#8A988E]">
+                          Account
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          navigate("/Deshboard");
+                          closeAll();
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                      >
+                        <LayoutDashboard size={16} />
+                        Dashboard
+                      </button>
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          navigate("/BookMarks");
+                          closeAll();
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                      >
+                        <BookmarkCheck size={16} />
+                        Bookmarks
+                      </button>
+
+                      <div className="my-1.5 border-t border-[#E3E8E3]" />
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        <LogOut size={16} />
+                        Log out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* MOBILE MENU BUTTON */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2 lg:hidden"
+            >
+              {isMobileMenuOpen ? (
+                <X size={21} strokeWidth={1.8} />
+              ) : (
+                <Menu size={21} strokeWidth={1.8} />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* 📱 MOBILE NAVIGATION MENU */}
-       <AnimatePresence>
-  {isMobileMenuOpen && (
-    <>
-      {/* 1. Solid Dark Backdrop (No transparency) */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => setIsMobileMenuOpen(false)}
-        className="fixed inset-0 bg-slate-950/90 z-[110] lg:hidden" // Thoda sa dim taaki drawer highlight ho
-      />
+        {/* =========================================================
+            MOBILE MENU
+        ========================================================== */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.button
+                type="button"
+                aria-label="Close menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 top-16 z-[105] bg-[#141F19]/20 lg:hidden"
+              />
 
-      {/* 2. Professional Side Drawer - Solid Slate-900 */}
-      <motion.div 
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{ type: "tween", duration: 0.3 }}
-        className="fixed inset-y-0 right-0 w-[280px] h-96 bg-slate-900 border-l border-white/10 z-[120] flex flex-col lg:hidden"
-      >
-        {/* Header - Simple & Solid */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-slate-900">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Menu</span>
-          <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 p-1">
-            <X size={20} />
-          </button>
-        </div>
+              {/* Drawer */}
+              <motion.aside
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{
+                  duration: 0.22,
+                  ease: [0.4, 0, 0.2, 1],
+                }}
+                className="fixed inset-y-0 right-0 z-[120] flex w-[min(320px,88vw)] flex-col border-l border-[#E3E8E3] bg-white lg:hidden"
+              >
+                {/* Drawer Header */}
+                <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E3E8E3] px-5">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/logo-img.png"
+                      alt="Pandas"
+                      className="h-7 w-auto object-contain"
+                    />
+                  </div>
 
-        {/* Links List - Simple & Clean */}
-        <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto bg-slate-900">
-          {[
-            { name: 'Home', path: '/' },
-            { name: 'Resources', path: '/resources' },
-            { name: 'Tools', path: '/Ai-Tools' },
-            { name: 'Contact', path: '/Contact' },
-            { name: 'About', path: '/about' }
-          ].map((item) => (
-            <Link 
-              key={item.name}
-              to={item.path}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center px-4 py-3 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-sm font-semibold tracking-wide"
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Close menu"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
 
-        {/* User Actions at Bottom - No transparency */}
-        <div className="p-4 border-t border-white/5 bg-slate-900">
-          
-          
-          <p className="text-[9px] text-center text-slate-500 mt-5 uppercase tracking-[0.2em] font-medium">
-            Pandas Included v1.0
-          </p>
-        </div>
-      </motion.div>
-    </>
-  )}
-</AnimatePresence>
+                {/* Search */}
+                <div className="border-b border-[#E3E8E3] p-4">
+                  <button
+                    type="button"
+                    onClick={openSearch}
+                    className="flex h-11 w-full items-center gap-3 rounded-lg border border-[#E3E8E3] bg-[#FAFAF8] px-3 text-left text-sm text-[#8A988E] transition-colors hover:border-[#C9D4CC] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-1"
+                  >
+                    <Search size={17} />
+                    Search tools...
+                  </button>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex-1 overflow-y-auto px-4 py-5">
+                  <p className="mb-2 px-3 text-xs font-medium text-[#8A988E]">
+                    Explore
+                  </p>
+
+                  <div className="space-y-1">
+                    {navLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center rounded-lg px-3 py-3 text-sm font-medium text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="my-5 border-t border-[#E3E8E3]" />
+
+                  <p className="mb-2 px-3 text-xs font-medium text-[#8A988E]">
+                    More
+                  </p>
+
+                  <div className="space-y-1">
+                    <Link
+                      to="/about"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center rounded-lg px-3 py-3 text-sm font-medium text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                    >
+                      About
+                    </Link>
+
+                    <Link
+                      to="/contact"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center rounded-lg px-3 py-3 text-sm font-medium text-[#4B5C53] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                    >
+                      Contact
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate("/AddTool");
+                        closeAll();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-[#3F7A5B] transition-colors hover:bg-[#E7F1EA] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                    >
+                      <Plus size={16} />
+                      Add a tool
+                    </button>
+                  </div>
+                </div>
+
+                {/* Drawer Footer */}
+                <div className="shrink-0 border-t border-[#E3E8E3] p-4">
+                  {!isLoggedIn ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate("/sign-up");
+                        closeAll();
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#3F7A5B] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#336249] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B] focus:ring-offset-2"
+                    >
+                      <UserPlus size={16} />
+                      Create account
+                    </button>
+                  ) : (
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigate("/Deshboard");
+                          closeAll();
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[#4B5C53] hover:bg-[#FAFAF8] hover:text-[#141F19]"
+                      >
+                        <LayoutDashboard size={16} />
+                        Dashboard
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigate("/BookMarks");
+                          closeAll();
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[#4B5C53] hover:bg-[#FAFAF8] hover:text-[#141F19]"
+                      >
+                        <BookmarkCheck size={16} />
+                        Bookmarks
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut size={16} />
+                        Log out
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="mt-4 text-center text-[11px] text-[#8A988E]">
+                    Pandas · AI tools & resources
+                  </p>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
       </nav>
 
-      {/* 🔍 SEARCH OVERLAY - Fully Responsive */}
+      {/* =========================================================
+          SEARCH OVERLAY
+      ========================================================== */}
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-start justify-center pt-[5vh] md:pt-[10vh] px-3 md:px-0 transition-all duration-300"
+            className="fixed inset-0 z-[200] flex items-start justify-center px-3 pt-[6vh] sm:px-5 md:pt-[10vh]"
           >
-            <div className="absolute inset-0 bg-[#030508]/95 backdrop-blur-md" onClick={() => setIsSearchOpen(false)} />
-            
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl bg-[#0A0C10] border border-white/10 rounded-[2rem] md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[80vh]"
-            >
-              {/* Header inside Search Component handled by SearchPage, but close button is here */}
-              <button 
-                onClick={() => setIsSearchOpen(false)}
-                className="absolute right-4 top-4 z-50 p-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 transition-all"
-              >
-                <X size={18} />
-              </button>
+            {/* Overlay */}
+            <button
+              type="button"
+              aria-label="Close search"
+              onClick={() => setIsSearchOpen(false)}
+              className="absolute inset-0 cursor-default bg-[#141F19]/25 backdrop-blur-[2px]"
+            />
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
-                <SearchPage setIsSearchOpen={setIsSearchOpen} /> 
-              </div>
-              
-              <div className="px-6 py-4 bg-black/40 flex items-center justify-between border-t border-white/5 shrink-0">
-                <div className="flex gap-4">
-                  <span className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                    <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[9px]">ESC</kbd> Close
+            {/* Search panel */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 12,
+                scale: 0.98,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                y: 12,
+                scale: 0.98,
+              }}
+              transition={{
+                duration: 0.18,
+              }}
+              className="relative flex max-h-[86vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-[#E3E8E3] bg-white shadow-[0_4px_12px_rgba(20,31,25,0.06)]"
+            >
+              {/* Search header */}
+              <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#E3E8E3] px-5">
+                <div className="flex items-center gap-2.5">
+                  <Search
+                    size={18}
+                    className="text-[#3F7A5B]"
+                    strokeWidth={1.8}
+                  />
+
+                  <span className="text-sm font-semibold text-[#141F19]">
+                    Search Pandas
                   </span>
                 </div>
-                <span className="text-[10px] font-black text-indigo-500/60 uppercase tracking-[0.2em] hidden xs:block">
-                  Pandas Command Center
+
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(false)}
+                  aria-label="Close search"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#8A988E] transition-colors hover:bg-[#FAFAF8] hover:text-[#141F19] focus:outline-none focus:ring-2 focus:ring-[#3F7A5B]"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+
+              {/* Search content */}
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <SearchPage setIsSearchOpen={setIsSearchOpen} />
+              </div>
+
+              {/* Search footer */}
+              <div className="flex shrink-0 items-center justify-between border-t border-[#E3E8E3] bg-[#FAFAF8] px-5 py-3">
+                <span className="flex items-center gap-2 text-xs text-[#8A988E]">
+                  <kbd className="rounded-md border border-[#E3E8E3] bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#4B5C53]">
+                    ESC
+                  </kbd>
+                  Close
+                </span>
+
+                <span className="hidden items-center gap-1.5 text-xs text-[#8A988E] sm:flex">
+                  <Command size={12} />
+                  <span>K</span>
+                  <span>to search</span>
                 </span>
               </div>
             </motion.div>
@@ -268,3 +571,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

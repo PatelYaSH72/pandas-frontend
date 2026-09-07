@@ -2,122 +2,200 @@ import { useState, useContext, useEffect } from "react";
 import { semanticSearch } from "../api/searchApi";
 import { AIContext } from "../Context/AitoolsContext";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import * as Icons from "lucide-react";
 
-export default function SearchPage({ setIsSearchOpen }) {
+export default function SearchPage({
+  setIsSearchOpen,
+  initialQuery = "",
+  hideInput = false,
+}) {
   const { backendUrl } = useContext(AIContext);
-  const [query, setQuery] = useState("");
+
+  const [query, setQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
 
-  const handleSearch = async (e) => {
-    e?.preventDefault();
-    if (!query.trim()) return;
+  const handleSearch = async (searchValue = query) => {
+    const trimmedQuery = searchValue.trim();
+
+    if (!trimmedQuery) {
+      setResults([]);
+      return;
+    }
+
     setLoading(true);
 
-    const data = await semanticSearch(query, backendUrl);
-    const mergedResults = [
-      ...(data.resources || []).map((res) => ({ ...res, type: "resource" })),
-      ...(data.tools || []).map((tool) => ({ ...tool, type: "tool" })),
-    ];
+    try {
+      const data = await semanticSearch(trimmedQuery, backendUrl);
 
-    setResults(mergedResults);
-    setLoading(false);
+      const mergedResults = [
+        ...(data.resources || []).map((res) => ({
+          ...res,
+          type: "resource",
+        })),
+        ...(data.tools || []).map((tool) => ({
+          ...tool,
+          type: "tool",
+        })),
+      ];
+
+      setResults(mergedResults);
+    } catch (error) {
+      console.error("Search error:", error);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tools = results.filter((item) => item.type === "tool");
   const resources = results.filter((item) => item.type === "resource");
 
   useEffect(() => {
-    if (!query) {
+    setQuery(initialQuery);
+
+    if (initialQuery?.trim()) {
+      handleSearch(initialQuery);
+    } else {
+      setResults([]);
+    }
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (!query.trim()) {
       setResults([]);
       return;
     }
+
     const timeout = setTimeout(() => {
-      handleSearch({ preventDefault: () => {} });
+      handleSearch(query);
     }, 500);
+
     return () => clearTimeout(timeout);
   }, [query]);
 
   return (
     <div className="w-full bg-transparent flex flex-col">
-      
-      {/* 🔍 Search Input Area - Fixed at Top */}
-      <div className="relative group px-6 py-4">
-        <div className="absolute left-11 top-1/2 -translate-y-1/2 text-indigo-500 z-10 pointer-events-none group-focus-within:scale-110 transition-transform duration-300">
-          <Icons.Search size={22} strokeWidth={2.5} />
+
+      {/* Search input - Navbar me visible, Hero me hidden */}
+      {!hideInput && (
+        <div className="relative group px-6 py-4">
+          <div className="absolute left-11 top-1/2 -translate-y-1/2 text-[#3F7A5B] z-10 pointer-events-none">
+            <Icons.Search size={22} strokeWidth={2} />
+          </div>
+
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search AI tools, resources..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="
+              w-full py-5 pl-14 pr-5 rounded-xl
+              bg-[#FAFAF8]
+              border border-[#E3E8E3]
+              text-[#141F19]
+              placeholder:text-[#8A988E]
+              focus:outline-none
+              focus:border-[#3F7A5B]
+              focus:ring-4
+              focus:ring-[#E7F1EA]
+              transition-all duration-200
+              text-lg tracking-tight
+            "
+          />
         </div>
+      )}
 
-        <input
-          autoFocus
-          type="text"
-          placeholder="Search AI tools, resources..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="
-            w-full py-5 pl-14 pr-14 rounded-2xl
-            bg-white/[0.03] border border-white/10
-            text-white placeholder:text-slate-500
-            focus:outline-none focus:border-indigo-500/50 
-            focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/10
-            transition-all duration-500 text-lg tracking-tight
-            backdrop-blur-sm
-          "
-        />
-      </div>
+      {/* RESULTS */}
+      <div
+        className={
+          hideInput
+            ? "overflow-hidden"
+            : "max-h-[60vh] overflow-y-auto overflow-x-hidden px-6 pb-8"
+        }
+      >
 
-      {/* 🚀 SCROLLABLE CONTENT AREA */}
-      <div className="max-h-[60vh] overflow-y-auto overflow-x-hidden px-6 pb-8 custom-scrollbar">
-        
-        {/* Loading Spinner */}
+        {/* Loading */}
         {loading && (
-          <div className="flex flex-col items-center justify-center gap-4 py-10">
-            <Icons.Loader2 size={32} className="text-indigo-500 animate-spin" />
-            <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase">
+          <div className="flex flex-col items-center justify-center gap-3 py-10">
+            <Icons.Loader2
+              size={28}
+              className="animate-spin text-[#3F7A5B]"
+            />
+
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8A988E]">
               Curating best matches...
             </p>
           </div>
         )}
 
-        {/* 🔧 AI TOOLS GRID */}
-        {tools.length > 0 && (
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-6 sticky top-0 bg-[#0A0C10]/80 backdrop-blur-md z-10 py-2">
-              <h2 className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase flex items-center gap-2">
-                <Icons.Cpu size={14} className="text-indigo-500" /> AI Tools
+        {/* TOOLS */}
+        {!loading && tools.length > 0 && (
+          <div className="p-4 sm:p-5">
+            <div className="mb-4 flex items-center gap-3">
+              <h2 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A988E]">
+                <Icons.Cpu
+                  size={14}
+                  className="text-[#3F7A5B]"
+                />
+                AI Tools
               </h2>
-              <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+
+              <div className="h-px flex-1 bg-[#E3E8E3]" />
+
+              <span className="text-[10px] font-medium text-[#8A988E]">
+                {tools.length} matches
+              </span>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-3">
-              {tools.slice(0,5).map((tool, idx) => (
+            <div className="grid gap-3 md:grid-cols-2">
+              {tools.slice(0, 5).map((tool, idx) => (
                 <motion.div
                   key={tool._id}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.03 }}
-                  className="group bg-white/[0.02] border border-white/5 rounded-2xl p-3 flex items-center justify-between hover:bg-white/[0.04] transition-all"
+                  className="
+                    group flex items-center justify-between gap-3
+                    rounded-xl border border-[#E3E8E3]
+                    bg-white p-3
+                    transition-all duration-200
+                    hover:border-[#C9D4CC]
+                    hover:bg-[#FAFAF8]
+                  "
                 >
-                  <div className="flex gap-3 items-center">
+                  <div className="flex min-w-0 items-center gap-3">
                     <img
                       src={tool.image}
                       alt={tool.name}
-                      className="w-12 h-12 rounded-xl object-cover border border-white/10"
+                      className="h-11 w-11 shrink-0 rounded-lg border border-[#E3E8E3] object-cover"
                     />
-                    <div>
-                      <h3 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">
+
+                    <div className="min-w-0">
+                      <h3 className="truncate text-sm font-semibold text-[#141F19] transition-colors group-hover:text-[#3F7A5B]">
                         {tool.name}
                       </h3>
-                      <p className="text-[11px] text-slate-500 line-clamp-1 max-w-[150px]">
+
+                      <p className="mt-0.5 line-clamp-1 max-w-[190px] text-[11px] text-[#8A988E]">
                         {tool.whatItDoes}
                       </p>
                     </div>
                   </div>
+
                   <Link
                     to={`/Ai-tools/${tool._id}`}
-                    onClick={() => setIsSearchOpen(false)}
-                    className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded-xl active:scale-95 transition-all"
+                    onClick={() => setIsSearchOpen?.(false)}
+                    className="
+                      shrink-0 rounded-lg
+                      bg-[#3F7A5B]
+                      px-3 py-2
+                      text-[10px] font-bold uppercase tracking-wider
+                      text-white
+                      transition-colors
+                      hover:bg-[#336249]
+                    "
                   >
                     View
                   </Link>
@@ -127,44 +205,83 @@ export default function SearchPage({ setIsSearchOpen }) {
           </div>
         )}
 
-        {/* 📚 RESOURCES LIST */}
-        {resources.length > 0 && (
-          <div>
-            <div className="flex items-center gap-3 mb-6 sticky top-0 bg-[#0A0C10]/80 backdrop-blur-md z-10 py-2">
-              <h2 className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase flex items-center gap-2">
-                <Icons.BookOpen size={14} className="text-emerald-500" /> Learning Path
+        {/* RESOURCES */}
+        {!loading && resources.length > 0 && (
+          <div className="border-t border-[#E3E8E3] p-4 sm:p-5">
+            <div className="mb-4 flex items-center gap-3">
+              <h2 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A988E]">
+                <Icons.BookOpen
+                  size={14}
+                  className="text-[#3F7A5B]"
+                />
+                Learning Resources
               </h2>
-              <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+
+              <div className="h-px flex-1 bg-[#E3E8E3]" />
+
+              <span className="text-[10px] font-medium text-[#8A988E]">
+                {resources.length} matches
+              </span>
             </div>
 
             <div className="space-y-2">
-              {resources.slice(0,5).map((res, idx) => {
-                const IconComponent = Icons[res.icon] || Icons.HelpCircle;
+              {resources.slice(0, 5).map((res, idx) => {
+                const IconComponent =
+                  Icons[res.icon] || Icons.HelpCircle;
+
                 return (
                   <motion.div
                     key={res._id}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.03 }}
-                    className="group flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-emerald-500/20 transition-all"
+                    className="
+                      group flex items-center justify-between gap-3
+                      rounded-xl border border-[#E3E8E3]
+                      bg-white p-3
+                      transition-all duration-200
+                      hover:border-[#C9D4CC]
+                      hover:bg-[#FAFAF8]
+                    "
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-                        <IconComponent size={18} />
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="
+                        flex h-10 w-10 shrink-0 items-center justify-center
+                        rounded-lg bg-[#E7F1EA]
+                        text-[#3F7A5B]
+                        transition-colors
+                        group-hover:bg-[#3F7A5B]
+                        group-hover:text-white
+                      ">
+                        <IconComponent size={17} />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-white text-sm">{res.name}</h3>
-                        <p className="text-[10px] text-slate-500 uppercase font-medium">
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-[#141F19]">
+                          {res.name}
+                        </h3>
+
+                        <p className="mt-0.5 line-clamp-1 text-[10px] font-medium uppercase text-[#8A988E]">
                           {res.short_description}
                         </p>
                       </div>
                     </div>
+
                     <Link
                       to={`/resources/${res.slug}`}
-                      onClick={() => setIsSearchOpen(false)}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-emerald-600 hover:text-white text-slate-400 transition-all"
+                      onClick={() => setIsSearchOpen?.(false)}
+                      className="
+                        shrink-0 rounded-lg
+                        border border-[#E3E8E3]
+                        bg-white p-2
+                        text-[#8A988E]
+                        transition-all
+                        hover:border-[#3F7A5B]
+                        hover:bg-[#E7F1EA]
+                        hover:text-[#3F7A5B]
+                      "
                     >
-                      <Icons.ArrowUpRight size={18} />
+                      <Icons.ArrowUpRight size={17} />
                     </Link>
                   </motion.div>
                 );
@@ -173,11 +290,25 @@ export default function SearchPage({ setIsSearchOpen }) {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* EMPTY */}
         {!loading && query && results.length === 0 && (
-          <div className="text-center py-10">
-            <Icons.SearchX size={40} className="mx-auto text-slate-700 mb-3" />
-            <p className="text-slate-500 text-sm font-medium">No results found for "{query}"</p>
+          <div className="px-5 py-10 text-center">
+            <div className="
+              mx-auto mb-3 flex h-11 w-11
+              items-center justify-center
+              rounded-xl bg-[#FAFAF8]
+              text-[#8A988E]
+            ">
+              <Icons.SearchX size={22} />
+            </div>
+
+            <p className="text-sm font-medium text-[#4B5C53]">
+              No results found for "{query}"
+            </p>
+
+            <p className="mt-1 text-xs text-[#8A988E]">
+              Try another keyword or search by task.
+            </p>
           </div>
         )}
       </div>

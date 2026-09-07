@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -15,324 +16,638 @@ import {
 } from "lucide-react";
 import { MyContext } from "../Context/RsourcesContext";
 
-
-
 export default function Resources() {
+  const { token, backendUrl } = useContext(MyContext);
 
-   const { token, backendUrl } = useContext(MyContext);
-
-  let cachedTechList = null;
-const contentCache = useRef({});
+  const contentCache = useRef({});
   const navigate = useNavigate();
 
-  const [techList, setTechList] = useState([]);       // sidebar ke liye
-  const [active, setActive] = useState(null);          // selected item (name, icon, slug)
-  const [activeData, setActiveData] = useState(null);  // right side full content
+  const [techList, setTechList] = useState([]);
+  const [active, setActive] = useState(null);
+  const [activeData, setActiveData] = useState(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // ✅ Step 1: Page load pe sirf lightweight list fetch karo
+  // --------------------------------------------------
+  // Fetch technology list
+  // --------------------------------------------------
   useEffect(() => {
-  // 🔥 agar pehle fetch ho chuka hai
-  if (cachedTechList) {
-    setTechList(cachedTechList);
+    let mounted = true;
 
-    if (cachedTechList.length > 0) {
-      handleSelect(cachedTechList[0]);
-    }
-    return;
-  }
+    const fetchTechnologyList = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/api/user/list`, {
+          headers: {
+            token,
+          },
+        });
 
-  fetch(`${backendUrl}/api/user/list`, {
-  headers: {token},
-})
-    .then((res) => res.json())
-    .then((json) => {
-      const list = json.data || [];
+        const json = await response.json();
+        const list = json.data || [];
 
-      cachedTechList = list; // 🔥 cache save
-      setTechList(list);
+        if (!mounted) return;
 
-      if (list.length > 0) {
-        handleSelect(list[0]);
+        setTechList(list);
+
+        if (list.length > 0) {
+          setActive(list[0]);
+        }
+      } catch (error) {
+        console.error("List fetch error:", error);
       }
-    })
-    .catch((err) => console.error("List fetch error:", err));
-}, []);
+    };
 
-  // ✅ Step 2: Sidebar click pe sirf us tech ka data fetch karo
-  const handleSelect = (tech) => {
-  // 🔥 same item pe click ignore
-  if (active?.slug === tech.slug) return;
+    fetchTechnologyList();
 
-  setActive(tech);
+    return () => {
+      mounted = false;
+    };
+  }, [backendUrl, token]);
 
-  // 🔥 cache hit → no API call
-  if (contentCache.current[tech.slug]) {
-    setActiveData(contentCache.current[tech.slug]);
-    return;
-  }
+  // --------------------------------------------------
+  // Fetch selected technology content
+  // --------------------------------------------------
+  useEffect(() => {
+    if (!active?.slug) return;
 
-  setContentLoading(true);
-  setActiveData(null);
+    const fetchContent = async () => {
+      // Cache hit
+      if (contentCache.current[active.slug]) {
+        setActiveData(contentCache.current[active.slug]);
+        return;
+      }
 
-  fetch(`${backendUrl}/api/user/${tech.slug}`, {
-  headers: {token}
-})
-    .then((res) => res.json())
-    .then((json) => {
-      contentCache.current[tech.slug] = json.data; // 🔥 cache store
-      setActiveData(json.data);
-      setContentLoading(false);
-    })
-    .catch((err) => {
-      console.error("Content fetch error:", err);
-      setContentLoading(false);
-    });
-};
+      setContentLoading(true);
+      setActiveData(null);
 
+      try {
+        const response = await fetch(
+          `${backendUrl}/api/user/${active.slug}`,
+          {
+            headers: {
+              token,
+            },
+          }
+        );
+
+        const json = await response.json();
+
+        contentCache.current[active.slug] = json.data;
+        setActiveData(json.data);
+      } catch (error) {
+        console.error("Content fetch error:", error);
+      } finally {
+        setContentLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [active, backendUrl, token]);
+
+  // --------------------------------------------------
+  // Scroll top
+  // --------------------------------------------------
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sidebar load hone tak spinner
+  // --------------------------------------------------
+  // Select technology
+  // --------------------------------------------------
+  const handleSelect = (tech) => {
+    if (!tech || active?.slug === tech.slug) return;
+
+    setActive(tech);
+    setIsMenuOpen(false);
+  };
+
+  // --------------------------------------------------
+  // View complete roadmap
+  // --------------------------------------------------
+  const handleViewDetails = (slug) => {
+    const savedToken = localStorage.getItem("token");
+
+    if (!savedToken) {
+      navigate("/login");
+      return;
+    }
+
+    navigate(`/Resources/${slug}`);
+  };
+
+  // --------------------------------------------------
+  // Loading state
+  // --------------------------------------------------
   if (techList.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full"
-        />
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-border border-t-accent rounded-full animate-spin" />
+          <p className="text-sm font-medium text-ink-muted">
+            Loading resources...
+          </p>
+        </div>
       </div>
     );
   }
 
-  const handleViewDetails = (slug) => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-    else navigate(`/Resources/${slug}`);
-  };
-
-  const ActiveIcon = active ? (Icons[active.icon] || Icons.Code) : Icons.Code;
+  const ActiveIcon = active
+    ? Icons[active.icon] || Icons.Code
+    : Icons.Code;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pt-20 pb-10">
+    <div className="min-h-screen bg-bg text-ink pt-20 pb-16">
 
-      {/* ========== MOBILE SELECTOR BUTTON ========== */}
-      <div className="lg:hidden sticky top-[72px] z-40 px-4 mb-2 pt-4">
+      {/* =====================================================
+          MOBILE CURRENT TOPIC
+      ====================================================== */}
+      <div className="lg:hidden sticky top-[72px] z-40 px-4 pt-4 pb-3 bg-bg/95 backdrop-blur-md">
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl shadow-xl shadow-indigo-500/10 active:scale-[0.98] transition-all"
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            py-3
+            border-b
+            border-border
+            text-left
+          "
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/30">
-              <ActiveIcon size={20} />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 shrink-0 rounded-md bg-accent-soft text-accent flex items-center justify-center">
+              <ActiveIcon size={18} />
             </div>
-            <div className="text-left">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400">Current Category</p>
-              <p className="text-sm font-extrabold tracking-tight">{active?.name}</p>
+
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-accent">
+                Technology
+              </p>
+
+              <p className="text-sm font-semibold text-ink truncate">
+                {active?.name}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-slate-400">
-            <span className="text-[10px] font-bold">Browse All</span>
-            <LayoutGrid size={18} />
+
+          <div className="flex items-center gap-1.5 text-ink-muted shrink-0">
+            <span className="text-xs font-medium">Browse</span>
+            <LayoutGrid size={16} />
           </div>
         </button>
       </div>
 
-      {/* ========== MOBILE DRAWER MENU ========== */}
+      {/* =====================================================
+          MOBILE DRAWER
+      ====================================================== */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-0 z-[100] bg-white dark:bg-slate-950 lg:hidden flex flex-col"
-          >
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-              <div>
-                <h2 className="text-xl font-black tracking-tight">Tech Library</h2>
-                <p className="text-xs text-slate-500 font-bold">Select a topic to start</p>
-              </div>
-              <button
-                onClick={() => setIsMenuOpen(false)}
-                className="p-3 bg-slate-200 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 active:scale-90 transition-all"
-              >
-                <X size={20} />
-              </button>
-            </div>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 z-[90] bg-ink/20 backdrop-blur-sm lg:hidden"
+            />
 
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2 no-scrollbar">
-              {techList.map((cat) => {
-                const IconComponent = Icons[cat.icon] || HelpCircle;
-                const isActive = active?.slug === cat.slug;
-                return (
-                  <button
-                    key={cat.slug}
-                    onClick={() => {
-                      handleSelect(cat);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all
-                      ${isActive
-                        ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20"
-                        : "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400"}`}
-                  >
-                    <div className={`p-2.5 rounded-xl ${isActive ? "bg-white/20" : "bg-white dark:bg-slate-800 shadow-sm"}`}>
-                      <IconComponent size={20} className={isActive ? "text-white" : "text-indigo-600"} />
-                    </div>
-                    <span className="font-bold text-sm tracking-tight">{cat.name}</span>
-                    {isActive && <motion.div layoutId="activeDot" className="ml-auto w-2 h-2 bg-white rounded-full" />}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{
+                type: "spring",
+                stiffness: 280,
+                damping: 30,
+              }}
+              className="
+                fixed
+                inset-y-0
+                left-0
+                z-[100]
+                w-[min(88vw,360px)]
+                bg-surface
+                border-r
+                border-border
+                lg:hidden
+                flex
+                flex-col
+              "
+            >
+              {/* Drawer header */}
+              <div className="px-5 py-5 border-b border-border flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-accent mb-1">
+                    Resource Library
+                  </p>
+
+                  <h2 className="text-xl font-bold tracking-tight text-ink">
+                    Technologies
+                  </h2>
+                </div>
+
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="
+                    w-9
+                    h-9
+                    rounded-md
+                    border
+                    border-border
+                    flex
+                    items-center
+                    justify-center
+                    text-ink-soft
+                    hover:bg-accent-soft
+                    hover:text-accent
+                    transition-colors
+                  "
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Technology list */}
+              <div className="flex-1 overflow-y-auto px-4 py-5">
+                <div className="space-y-1">
+                  {techList.map((cat) => {
+                    const IconComponent =
+                      Icons[cat.icon] || HelpCircle;
+
+                    const isActive = active?.slug === cat.slug;
+
+                    return (
+                      <button
+                        key={cat.slug}
+                        onClick={() => handleSelect(cat)}
+                        className={`
+                          w-full
+                          flex
+                          items-center
+                          gap-3
+                          px-3
+                          py-3
+                          text-left
+                          border-b
+                          transition-colors
+                          ${
+                            isActive
+                              ? "border-accent/20 bg-accent-soft text-accent"
+                              : "border-transparent text-ink-soft hover:bg-bg hover:text-ink"
+                          }
+                        `}
+                      >
+                        <IconComponent size={17} />
+
+                        <span className="text-sm font-medium flex-1">
+                          {cat.name}
+                        </span>
+
+                        {isActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-[280px_1fr] gap-10">
+      {/* =====================================================
+          MAIN LAYOUT
+      ====================================================== */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
 
-        {/* ========== DESKTOP SIDEBAR ========== */}
-        <aside className="hidden lg:block h-[calc(100vh-140px)] sticky top-28 overflow-y-auto no-scrollbar pr-2">
-          <div className="space-y-6">
-            <div className="px-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-600 mb-1">
-                Technology
-              </h3>
-              <p className="text-xl font-black tracking-tighter">Explorer</p>
+        <div className="grid lg:grid-cols-[230px_minmax(0,1fr)] gap-12 xl:gap-20">
+
+          {/* =================================================
+              DESKTOP SIDEBAR
+          ================================================== */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-28">
+
+              {/* Sidebar heading */}
+              <div className="mb-7">
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-1.5">
+                  Resource Library
+                </p>
+
+                <h2 className="text-lg font-bold tracking-tight text-ink">
+                  Technologies
+                </h2>
+              </div>
+
+              {/* Navigation */}
+              <nav className="space-y-0.5">
+                {techList.map((cat) => {
+                  const IconComponent =
+                    Icons[cat.icon] || HelpCircle;
+
+                  const isActive = active?.slug === cat.slug;
+
+                  return (
+                    <button
+                      key={cat.slug}
+                      onClick={() => handleSelect(cat)}
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-3
+                        py-2.5
+                        text-left
+                        border-l-2
+                        transition-all
+                        ${
+                          isActive
+                            ? "border-accent bg-accent-soft text-accent"
+                            : "border-transparent text-ink-soft hover:border-border hover:bg-surface hover:text-ink"
+                        }
+                      `}
+                    >
+                      <IconComponent size={16} />
+
+                      <span className="text-sm font-medium truncate">
+                        {cat.name}
+                      </span>
+
+                      {isActive && (
+                        <ChevronRight
+                          size={14}
+                          className="ml-auto"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
+          </aside>
 
-            <div className="space-y-1.5">
-              {techList.map((cat) => {
-                const IconComponent = Icons[cat.icon] || HelpCircle;
-                const isActive = active?.slug === cat.slug;
-                return (
-                  <button
-                    key={cat.slug}
-                    onClick={() => handleSelect(cat)}
-                    className={`w-full flex items-center justify-between group px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200
-                      ${isActive
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 translate-x-1"
-                        : "hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-500 dark:text-slate-400 hover:text-indigo-600"
-                      }`}
+          {/* =================================================
+              CONTENT
+          ================================================== */}
+          <main className="min-w-0 pt-5 lg:pt-8">
+
+            {/* Back */}
+            <button
+              onClick={() => navigate("/")}
+              className="
+                hidden
+                md:inline-flex
+                items-center
+                gap-2
+                mb-10
+                text-xs
+                font-semibold
+                text-ink-muted
+                hover:text-accent
+                transition-colors
+              "
+            >
+              <ArrowLeft size={14} />
+              Back to Home
+            </button>
+
+            {/* Loading */}
+            {contentLoading ? (
+              <div className="min-h-[500px] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-8 h-8 border-2 border-border border-t-accent rounded-full animate-spin" />
+
+                  <p className="text-sm text-ink-muted">
+                    Loading {active?.name}...
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                {activeData && (
+                  <motion.article
+                    key={activeData.slug}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.28 }}
                   >
-                    <div className="flex items-center gap-3.5">
-                      <div className={`p-2 rounded-xl transition-colors ${isActive ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-white"}`}>
-                        <IconComponent size={18} className={isActive ? "text-white" : "text-indigo-500"} />
-                      </div>
-                      <span className="tracking-tight">{cat.name}</span>
-                    </div>
-                    <ChevronRight size={14} className={`transition-transform duration-300 ${isActive ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`} />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
 
-        {/* ========== MAIN CONTENT AREA ========== */}
-        <main className="min-w-0 pt-9">
-          <button
-            onClick={() => navigate("/")}
-            className="hidden md:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 mb-10 transition-colors"
-          >
-            <ArrowLeft size={14} />
-            Back to Home
-          </button>
+                    {/* =================================================
+                        ARTICLE HEADER
+                    ================================================== */}
+                    <header className="max-w-4xl pb-10 border-b border-border">
 
-          {/* ✅ Content loading spinner — sirf right side pe */}
-          {contentLoading ? (
-            <div className="flex items-center justify-center h-96">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1 }}
-                className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full"
-              />
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              {activeData && (
-                <motion.div
-                  key={activeData.slug}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {/* Main Header */}
-                  <div className="mb-14">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-16 h-16 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-600/40">
-                        <ActiveIcon size={32} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 text-indigo-600 mb-1">
-                          <Sparkles size={14} />
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Mastery Path</span>
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="w-10 h-10 rounded-md bg-accent-soft text-accent flex items-center justify-center">
+                          <ActiveIcon size={20} />
                         </div>
-                        <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9]">
-                          {activeData?.name}
-                        </h1>
-                      </div>
-                    </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl max-w-2xl leading-relaxed font-medium">
-                      {activeData?.detailed_description}
-                    </p>
-                  </div>
 
-                  <div className="space-y-16">
-                    {/* Checklist Section */}
-                    {activeData?.key_concepts?.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8 items-start">
-                        <div className="pt-2">
-                          <h2 className="text-sm font-black uppercase tracking-widest text-slate-400">Key Concepts</h2>
-                          <p className="text-xs font-bold text-slate-400/60 mt-1">Must learn topics</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {activeData.key_concepts.map((item, i) => (
-                            <span key={i} className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-bold shadow-sm">
-                              {item}
-                            </span>
-                          ))}
+                        <div className="flex items-center gap-2 text-accent">
+                          <Sparkles size={13} />
+
+                          <span className="text-[10px] font-bold uppercase tracking-[0.18em]">
+                            Learning Guide
+                          </span>
                         </div>
                       </div>
-                    )}
 
-                    {/* Premium Roadmap Section */}
-                    <section className="relative group overflow-hidden rounded-[3rem] bg-indigo-600 p-1 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-                      <div className="bg-slate-950 rounded-[2.9rem] p-10 md:p-16 overflow-hidden relative">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/30 blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-600/50 transition-all duration-700" />
-                        <div className="relative z-10">
-                          <div className="flex items-center gap-2 text-indigo-500 mb-6">
-                            <Lock size={16} />
-                            <span className="text-xs font-black uppercase tracking-[0.3em]">Curated Content</span>
+                      <h1 className="
+                        text-4xl
+                        sm:text-5xl
+                        lg:text-6xl
+                        font-bold
+                        tracking-[-0.035em]
+                        leading-[1.05]
+                        text-ink
+                        mb-6
+                      ">
+                        {activeData?.name}
+                      </h1>
+
+                      <p className="
+                        max-w-3xl
+                        text-base
+                        md:text-lg
+                        leading-8
+                        text-ink-soft
+                      ">
+                        {activeData?.detailed_description}
+                      </p>
+                    </header>
+
+                    {/* =================================================
+                        CONTENT SECTIONS
+                    ================================================== */}
+                    <div className="max-w-4xl">
+
+                      {/* Key Concepts */}
+                      {activeData?.key_concepts?.length > 0 && (
+                        <section className="py-10 border-b border-border">
+
+                          <div className="
+                            grid
+                            md:grid-cols-[170px_minmax(0,1fr)]
+                            gap-6
+                            md:gap-10
+                          ">
+
+                            <div>
+                              <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-ink">
+                                Key Concepts
+                              </h2>
+
+                              <p className="text-xs text-ink-muted mt-1.5 leading-5">
+                                Core topics to understand
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-x-2 gap-y-2">
+                              {activeData.key_concepts.map(
+                                (item, index) => (
+                                  <span
+                                    key={index}
+                                    className="
+                                      inline-flex
+                                      items-center
+                                      px-3
+                                      py-1.5
+                                      rounded-md
+                                      bg-surface
+                                      border
+                                      border-border
+                                      text-sm
+                                      font-medium
+                                      text-ink-soft
+                                    "
+                                  >
+                                    {item}
+                                  </span>
+                                )
+                              )}
+                            </div>
                           </div>
-                          <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter max-w-md leading-none">
-                            Ready to master {activeData.name}?
-                          </h2>
-                          <button
-                            onClick={() => handleViewDetails(activeData?.slug)}
-                            className="flex items-center gap-4 px-8 py-5 rounded-2xl bg-indigo-600 text-white font-black hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-indigo-600/20"
-                          >
-                            View Full Roadmap
-                            <ArrowRight size={20} />
-                          </button>
+                        </section>
+                      )}
+
+                      {/* =================================================
+                          ROADMAP CTA
+                      ================================================== */}
+                      <section className="py-12">
+
+                        <div className="
+                          relative
+                          overflow-hidden
+                          border-t
+                          border-b
+                          border-accent/20
+                          py-10
+                          md:py-12
+                        ">
+
+                          {/* subtle accent */}
+                          <div className="
+                            absolute
+                            left-0
+                            top-0
+                            bottom-0
+                            w-1
+                            bg-accent
+                          " />
+
+                          <div className="pl-6 md:pl-8">
+
+                            <div className="flex items-center gap-2 text-accent mb-4">
+                              <Lock size={15} />
+
+                              <span className="
+                                text-[10px]
+                                font-bold
+                                uppercase
+                                tracking-[0.18em]
+                              ">
+                                Curated Roadmap
+                              </span>
+                            </div>
+
+                            <h2 className="
+                              text-2xl
+                              md:text-4xl
+                              font-bold
+                              tracking-tight
+                              text-ink
+                              max-w-2xl
+                              leading-tight
+                              mb-4
+                            ">
+                              Ready to go deeper into{" "}
+                              <span className="text-accent">
+                                {activeData.name}
+                              </span>
+                              ?
+                            </h2>
+
+                            <p className="
+                              text-sm
+                              md:text-base
+                              leading-7
+                              text-ink-soft
+                              max-w-xl
+                              mb-7
+                            ">
+                              Explore the complete learning roadmap,
+                              concepts, resources and practical guidance
+                              for this technology.
+                            </p>
+
+                            <button
+                              onClick={() =>
+                                handleViewDetails(activeData?.slug)
+                              }
+                              className="
+                                inline-flex
+                                items-center
+                                gap-2.5
+                                px-5
+                                py-3
+                                rounded-md
+                                bg-accent
+                                text-white
+                                text-sm
+                                font-semibold
+                                hover:bg-accent-hover
+                                transition-colors
+                              "
+                            >
+                              View Full Roadmap
+                              <ArrowRight size={16} />
+                            </button>
+
+                          </div>
                         </div>
-                      </div>
-                    </section>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
-        </main>
+                      </section>
+
+                    </div>
+                  </motion.article>
+                )}
+              </AnimatePresence>
+            )}
+          </main>
+        </div>
       </div>
 
       <style jsx>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
     </div>
   );

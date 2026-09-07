@@ -13,3 +13,31 @@
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #1e293b;
 }
+
+
+@theme {
+  /* Backgrounds */
+  --color-bg: #FAFAF8;
+  --color-surface: #FFFFFF;
+
+  /* Borders */
+  --color-border: #E3E8E3;
+
+  /* Text */
+  --color-ink: #141F19;
+  --color-ink-soft: #4B5C53;
+  --color-ink-muted: #8A988E;
+
+  /* Accent (sage green) */
+  --color-accent: #3F7A5B;
+  --color-accent-hover: #336249;
+  --color-accent-soft: #E7F1EA;
+
+  /* Type */
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
