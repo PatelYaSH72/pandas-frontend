@@ -488,7 +488,7 @@ export default function ReasourcesAll() {
                   }
                 />
 
-                {bookmarked ? "Saved" : "Save"}
+                {bookmarked ? "Bookmarked" : "Bookmark"}
 
                 <span className="text-xs opacity-70">
                   {bookmarkCount}
