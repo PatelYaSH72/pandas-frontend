@@ -12,6 +12,7 @@ import {
   FolderTree,
   BookOpen,
   GitCompare,
+  Contact
 } from "lucide-react";
 import { UserContext } from "../Context/UserContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -37,6 +38,11 @@ const NAV_LINKS = [
     name: "Compare",
     path: "/Compare-tools",
     icon: GitCompare,
+  },
+  {
+    name: "Contact",
+    path: "/contact",
+    icon: Contact,
   },
 ];
 
