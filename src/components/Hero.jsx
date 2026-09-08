@@ -11,6 +11,8 @@ import {
   BookOpen,
   HelpCircle,
   ArrowUpRight,
+  CornerDownLeft,
+  MousePointer2,
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +37,7 @@ const Hero = () => {
   const [loading, setLoading] = useState(false);
   const [searchStarted, setSearchStarted] = useState(false);
   const [error, setError] = useState('');
+  const [activeScope, setActiveScope] = useState('all');
 
   const popularSearches = [
     'AI writing',
@@ -43,13 +46,6 @@ const Hero = () => {
     'Image generation',
   ];
 
-  /*
-   * Resource icons
-   *
-   * IMPORTANT:
-   * Do not use require() here.
-   * Vite/React browser environment does not provide require().
-   */
   const resourceIcons = {
     Search,
     BookOpen,
@@ -60,9 +56,9 @@ const Hero = () => {
   };
 
   /*
-   * ---------------------------------------------------------
-   * GSAP ANIMATIONS
-   * ---------------------------------------------------------
+   * =========================================================
+   * GSAP
+   * =========================================================
    */
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -144,9 +140,9 @@ const Hero = () => {
   }, []);
 
   /*
-   * ---------------------------------------------------------
-   * SEARCH FUNCTION
-   * ---------------------------------------------------------
+   * =========================================================
+   * SEARCH
+   * =========================================================
    */
   const performSearch = async (value) => {
     const query = value?.trim();
@@ -191,11 +187,9 @@ const Hero = () => {
   };
 
   /*
-   * ---------------------------------------------------------
-   * DEBOUNCED SEARCH
-   *
-   * User types -> wait 500ms -> search
-   * ---------------------------------------------------------
+   * =========================================================
+   * DEBOUNCE
+   * =========================================================
    */
   useEffect(() => {
     const query = searchQuery.trim();
@@ -215,9 +209,38 @@ const Hero = () => {
   }, [searchQuery, backendUrl]);
 
   /*
-   * ---------------------------------------------------------
+   * =========================================================
+   * KEYBOARD SHORTCUT
+   * =========================================================
+   */
+  useEffect(() => {
+    const handleKeyboard = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+
+        const input = document.getElementById('hero-search');
+
+        if (input) {
+          input.focus();
+        }
+      }
+
+      if (event.key === 'Escape' && searchQuery) {
+        clearSearch();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboard);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyboard);
+    };
+  }, [searchQuery]);
+
+  /*
+   * =========================================================
    * FORM SEARCH
-   * ---------------------------------------------------------
+   * =========================================================
    */
   const handleSearch = (event) => {
     event.preventDefault();
@@ -230,23 +253,20 @@ const Hero = () => {
   };
 
   /*
-   * ---------------------------------------------------------
+   * =========================================================
    * POPULAR SEARCH
-   * ---------------------------------------------------------
+   * =========================================================
    */
   const handlePopularSearch = (query) => {
     setSearchQuery(query);
-
-    /*
-     * Search immediately instead of waiting for debounce.
-     */
+    setActiveScope('all');
     performSearch(query);
   };
 
   /*
-   * ---------------------------------------------------------
-   * CLEAR SEARCH
-   * ---------------------------------------------------------
+   * =========================================================
+   * CLEAR
+   * =========================================================
    */
   const clearSearch = () => {
     setSearchQuery('');
@@ -254,12 +274,13 @@ const Hero = () => {
     setSearchStarted(false);
     setLoading(false);
     setError('');
+    setActiveScope('all');
   };
 
   /*
-   * ---------------------------------------------------------
-   * RESULT TYPES
-   * ---------------------------------------------------------
+   * =========================================================
+   * RESULTS
+   * =========================================================
    */
   const tools = results.filter(
     (item) => item.type === 'tool'
@@ -269,10 +290,20 @@ const Hero = () => {
     (item) => item.type === 'resource'
   );
 
+  const hasResults =
+    tools.length > 0 || resources.length > 0;
+
+  const filteredResults =
+    activeScope === 'tools'
+      ? tools
+      : activeScope === 'resources'
+        ? resources
+        : results;
+
   /*
-   * ---------------------------------------------------------
+   * =========================================================
    * RESOURCE ICON
-   * ---------------------------------------------------------
+   * =========================================================
    */
   const getResourceIcon = (iconName) => {
     if (!iconName) return HelpCircle;
@@ -280,814 +311,863 @@ const Hero = () => {
     return resourceIcons[iconName] || HelpCircle;
   };
 
-  /*
-   * ---------------------------------------------------------
-   * RESULT EXISTENCE
-   * ---------------------------------------------------------
-   */
-  const hasResults = tools.length > 0 || resources.length > 0;
-
   return (
     <section
       ref={heroRef}
-      className="relative overflow-hidden bg-[#FAFAF8]"
+      className="
+        relative
+        min-h-screen
+        overflow-hidden
+        bg-[#FAFAF8]
+      "
     >
-      <div className="mx-auto max-w-7xl px-6 pb-16 pt-28 sm:pb-20 sm:pt-32 lg:px-8 lg:pb-24 lg:pt-36">
+      {/* =====================================================
+          BACKGROUND GRID
+      ====================================================== */}
 
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          opacity-60
+          [background-image:linear-gradient(#E8EDE9_1px,transparent_1px),linear-gradient(90deg,#E8EDE9_1px,transparent_1px)]
+          [background-size:72px_72px]
+          [mask-image:linear-gradient(to_bottom,black,transparent_80%)]
+        "
+      />
+
+      {/* Soft green glow */}
+
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-24
+          h-[420px]
+          w-[700px]
+          -translate-x-1/2
+          rounded-full
+          bg-[#DCEDE2]
+          opacity-40
+          blur-[120px]
+        "
+      />
+
+      <div
+        className="
+          relative
+          mx-auto
+          max-w-7xl
+          px-4
+          pb-16
+          pt-28
+          sm:px-6
+          sm:pb-20
+          sm:pt-32
+          lg:px-8
+          lg:pb-24
+          lg:pt-36
+        "
+      >
         {/* =====================================================
             HERO CONTENT
         ====================================================== */}
 
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
 
-          {/* ---------------------------------------------------
-              EYEBROW
-          ---------------------------------------------------- */}
-          <div className="hero-eyebrow mb-6 inline-flex items-center gap-2 rounded-lg bg-[#E7F1EA] px-3 py-1.5 text-xs font-medium text-[#3F7A5B]">
-            <Sparkles
-              size={13}
-              strokeWidth={1.8}
-            />
+          {/* EYEBROW */}
 
-            <span>
-              AI tools & resources
-            </span>
-          </div>
-
-          {/* ---------------------------------------------------
-              HEADING
-          ---------------------------------------------------- */}
-          <h1 className="hero-title max-w-4xl text-[44px] font-semibold leading-[1.02] tracking-[-0.045em] text-[#141F19] sm:text-[56px] md:text-[64px] lg:text-[72px]">
-            Find the right AI tool
-            <br className="hidden sm:block" />
-            {' '}for the job.
-          </h1>
-
-          {/* ---------------------------------------------------
-              DESCRIPTION
-          ---------------------------------------------------- */}
-          <p className="hero-description mt-6 max-w-2xl text-base leading-7 text-[#4B5C53] sm:text-lg">
-            Discover AI tools and learning resources by what they
-            help you accomplish — not just by what's trending.
-          </p>
-
-          {/* =====================================================
-              SEARCH BAR
-          ====================================================== */}
-
-          <form
-            onSubmit={handleSearch}
-            className="hero-search mt-9 w-full max-w-2xl"
+          <div
+            className="
+              hero-eyebrow
+              mb-6
+              inline-flex
+              items-center
+              gap-2
+              rounded-full
+              border
+              border-[#D9E5DC]
+              bg-white/80
+              px-3.5
+              py-1.5
+              text-xs
+              font-medium
+              text-[#3F7A5B]
+              shadow-[0_1px_2px_rgba(20,31,25,0.03)]
+              backdrop-blur-sm
+            "
           >
-            <label
-              htmlFor="hero-search"
-              className="sr-only"
-            >
-              Search AI tools
-            </label>
-
-            <div
+            <span
               className="
-                group flex min-h-[60px] items-center
-                rounded-xl
-                border border-[#D9E1DB]
-                bg-white
-                p-1.5
-                shadow-[0_1px_2px_rgba(20,31,25,0.04)]
-                transition-all duration-200
-                hover:border-[#C9D4CC]
-                focus-within:border-[#3F7A5B]
-                focus-within:ring-4
-                focus-within:ring-[#E7F1EA]
+                flex
+                h-5
+                w-5
+                items-center
+                justify-center
+                rounded-full
+                bg-[#E7F1EA]
               "
             >
-              {/* Search icon */}
+              <Sparkles size={11} />
+            </span>
 
-              <Search
-                size={21}
-                strokeWidth={1.8}
-                className="
-                  ml-3.5
-                  shrink-0
-                  text-[#8A988E]
-                  transition-colors
-                  group-focus-within:text-[#3F7A5B]
-                "
-              />
+            <span>AI tools & resources</span>
+          </div>
 
-              {/* Input */}
+          {/* TITLE */}
 
-              <input
-                id="hero-search"
-                name="search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) =>
-                  setSearchQuery(event.target.value)
-                }
-                placeholder="What are you looking for?"
-                autoComplete="off"
-                className="
-                  min-w-0
-                  flex-1
-                  bg-transparent
-                  px-3
-                  text-sm
-                  text-[#141F19]
-                  outline-none
-                  placeholder:text-[#8A988E]
-                  sm:text-base
-                "
-              />
+          <h1
+            className="
+              hero-title
+              max-w-4xl
+              text-[44px]
+              font-semibold
+              leading-[0.98]
+              tracking-[-0.055em]
+              text-[#141F19]
+              sm:text-[58px]
+              md:text-[68px]
+              lg:text-[78px]
+            "
+          >
+            Find the right AI tool
+            <br className="hidden sm:block" />
 
-              {/* Clear button */}
+            <span className="text-[#829087]">
+              {' '}for the job.
+            </span>
+          </h1>
 
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  aria-label="Clear search"
-                  className="
-                    mr-1
-                    flex h-8 w-8
-                    shrink-0
-                    items-center justify-center
-                    rounded-lg
-                    text-[#8A988E]
-                    transition-colors
-                    hover:bg-[#FAFAF8]
-                    hover:text-[#141F19]
-                  "
-                >
-                  <X size={16} />
-                </button>
-              )}
+          {/* DESCRIPTION */}
 
-              {/* Keyboard shortcut */}
+          <p
+            className="
+              hero-description
+              mt-6
+              max-w-2xl
+              text-sm
+              leading-6
+              text-[#5E6B63]
+              sm:text-base
+              sm:leading-7
+            "
+          >
+            Discover AI tools and learning resources by what
+            they help you accomplish — not just by what's
+            trending.
+          </p>
 
+          {/* =================================================
+              HERO COMMAND PALETTE
+          ================================================== */}
+
+          <div
+            className="
+              hero-search
+              mt-9
+              w-full
+              max-w-2xl
+            "
+          >
+            <form onSubmit={handleSearch}>
               <div
-                className="
-                  mr-1
-                  hidden
-                  items-center
-                  gap-1
-                  rounded-lg
-                  border border-[#E3E8E3]
-                  bg-[#FAFAF8]
-                  px-2 py-1
-                  text-xs
-                  text-[#8A988E]
-                  sm:flex
-                "
+                className={`
+                  relative
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  bg-white
+                  text-left
+                  shadow-[0_18px_50px_rgba(20,31,25,0.08)]
+                  transition-all
+                  duration-300
+                  ${
+                    searchStarted
+                      ? 'border-[#BFD0C4] shadow-[0_20px_60px_rgba(63,122,91,0.10)]'
+                      : 'border-[#D9E1DB]'
+                  }
+                `}
               >
-                <Command size={12} />
-                <span>K</span>
-              </div>
+                {/* Reduced-motion-safe shimmer */}
 
-              {/* Search button */}
+                <div
+                  aria-hidden="true"
+                  className="
+                    pointer-events-none
+                    absolute
+                    inset-0
+                    -translate-x-full
+                    bg-gradient-to-r
+                    from-transparent
+                    via-[#E7F1EA]/50
+                    to-transparent
+                    opacity-0
+                    transition-opacity
+                    duration-300
+                    motion-safe:animate-[shimmer_3s_infinite]
+                    group-focus-within:opacity-100
+                  "
+                />
 
-              <Button
-                type="submit"
-                className="
-                  flex h-11
-                  shrink-0
-                  items-center
-                  gap-2
-                  rounded-lg
-                  border-none
-                  bg-[#3F7A5B]
-                  px-5
-                  text-sm
-                  font-semibold
-                  text-white
-                  transition-colors
-                  duration-200
-                  hover:bg-[#336249]
-                "
-              >
-                Search
+                {/* SEARCH INPUT */}
 
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-          </form>
-
-          {/* =====================================================
-              INLINE SEARCH RESULTS
-
-              IMPORTANT:
-              This is DIRECTLY below the search bar.
-              No SearchPage component.
-              No second input.
-              No modal.
-              No new page.
-          ====================================================== */}
-
-          {searchStarted && (
-            <div className="mt-5 w-full max-w-2xl text-left">
-
-              {/* -------------------------------------------------
-                  LOADING
-              -------------------------------------------------- */}
-
-              {loading && (
                 <div
                   className="
-                    overflow-hidden
-                    rounded-xl
-                    border border-[#D9E1DB]
-                    bg-white
-                    px-6 py-8
-                    shadow-[0_1px_2px_rgba(20,31,25,0.04)]
+                    group
+                    relative
+                    flex
+                    min-h-[62px]
+                    items-center
+                    px-3
+                    sm:px-4
                   "
                 >
-                  <div className="flex items-center justify-center gap-3">
-
-                    <Loader2
-                      size={20}
-                      className="animate-spin text-[#3F7A5B]"
-                    />
-
-                    <p className="text-sm font-medium text-[#4B5C53]">
-                      Finding the best matches...
-                    </p>
-
-                  </div>
-                </div>
-              )}
-
-              {/* -------------------------------------------------
-                  ERROR
-              -------------------------------------------------- */}
-
-              {!loading && error && (
-                <div
-                  className="
-                    rounded-xl
-                    border border-[#E3E8E3]
-                    bg-white
-                    px-6 py-7
-                    text-center
-                    shadow-[0_1px_2px_rgba(20,31,25,0.04)]
-                  "
-                >
-                  <p className="text-sm text-[#6B7770]">
-                    {error}
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      performSearch(searchQuery)
-                    }
-                    className="
-                      mt-4
-                      text-sm
-                      font-semibold
-                      text-[#3F7A5B]
-                      hover:text-[#336249]
-                    "
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-
-              {/* -------------------------------------------------
-                  RESULTS
-              -------------------------------------------------- */}
-
-              {!loading &&
-                !error &&
-                hasResults && (
                   <div
                     className="
-                      overflow-hidden
-                      rounded-xl
-                      border border-[#D9E1DB]
-                      bg-white
-                      shadow-[0_4px_16px_rgba(20,31,25,0.05)]
+                      flex
+                      h-9
+                      w-9
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-lg
+                      bg-[#F1F5F2]
+                      text-[#7D8C83]
+                      transition-colors
+                      group-focus-within:bg-[#E7F1EA]
+                      group-focus-within:text-[#3F7A5B]
                     "
                   >
+                    <Search
+                      size={18}
+                      strokeWidth={1.8}
+                    />
+                  </div>
 
-                    {/* Result header */}
+                  <input
+                    id="hero-search"
+                    name="search"
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) =>
+                      setSearchQuery(event.target.value)
+                    }
+                    placeholder="Search AI tools, tasks, or resources..."
+                    autoComplete="off"
+                    className="
+                      min-w-0
+                      flex-1
+                      bg-transparent
+                      px-3
+                      text-sm
+                      font-medium
+                      text-[#141F19]
+                      outline-none
+                      placeholder:text-[#8A988E]
+                      sm:text-base
+                    "
+                  />
 
-                    <div
+                  {/* CLEAR */}
+
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      aria-label="Clear search"
                       className="
+                        mr-2
                         flex
+                        h-8
+                        w-8
+                        shrink-0
                         items-center
-                        justify-between
-                        gap-4
-                        border-b
-                        border-[#E3E8E3]
-                        bg-[#FAFAF8]
-                        px-5 py-4
+                        justify-center
+                        rounded-lg
+                        text-[#89958E]
+                        transition-colors
+                        hover:bg-[#F1F5F2]
+                        hover:text-[#141F19]
                       "
                     >
-                      <div>
-                        <p
-                          className="
-                            text-[10px]
-                            font-semibold
-                            uppercase
-                            tracking-[0.14em]
-                            text-[#8A988E]
-                          "
-                        >
-                          Search results
-                        </p>
+                      <X size={16} />
+                    </button>
+                  )}
 
-                        <p className="mt-1 text-sm font-semibold text-[#141F19]">
-                          Results for "{searchQuery}"
-                        </p>
-                      </div>
+                  {/* COMMAND KEY */}
 
+                  <div
+                    className="
+                      mr-1
+                      hidden
+                      items-center
+                      gap-1
+                      rounded-md
+                      border
+                      border-[#E1E7E3]
+                      bg-[#FAFAF8]
+                      px-2
+                      py-1
+                      text-[10px]
+                      font-medium
+                      text-[#8A988E]
+                      sm:flex
+                    "
+                  >
+                    <Command size={11} />
+                    <span>K</span>
+                  </div>
+
+                  {/* SEARCH BUTTON */}
+
+                  <Button
+                    type="submit"
+                    className="
+                      flex
+                      h-10
+                      shrink-0
+                      items-center
+                      gap-1.5
+                      rounded-lg
+                      border-none
+                      bg-[#3F7A5B]
+                      px-4
+                      text-xs
+                      font-semibold
+                      text-white
+                      shadow-sm
+                      transition-all
+                      duration-200
+                      hover:bg-[#336249]
+                      hover:shadow-md
+                      sm:px-5
+                      sm:text-sm
+                    "
+                  >
+                    Search
+                    <ArrowRight size={14} />
+                  </Button>
+                </div>
+
+                {/* =================================================
+                    COMMAND PALETTE SCOPE BAR
+                ================================================== */}
+
+                <div
+                  className="
+                    flex
+                    items-center
+                    justify-between
+                    border-t
+                    border-[#E8EDE9]
+                    bg-[#FCFDFC]
+                    px-3
+                    py-2
+                    sm:px-4
+                  "
+                >
+                  <div className="flex items-center gap-1">
+                    {[
+                      {
+                        id: 'all',
+                        label: 'All',
+                        count: results.length,
+                      },
+                      {
+                        id: 'tools',
+                        label: 'AI Tools',
+                        count: tools.length,
+                      },
+                      {
+                        id: 'resources',
+                        label: 'Resources',
+                        count: resources.length,
+                      },
+                    ].map((scope) => (
                       <button
+                        key={scope.id}
                         type="button"
                         onClick={() =>
-                          navigate(
-                            `/Ai-Tools?search=${encodeURIComponent(
-                              searchQuery.trim()
-                            )}`
-                          )
+                          setActiveScope(scope.id)
                         }
-                        className="
-                          hidden
-                          items-center
-                          gap-1
-                          text-xs
-                          font-semibold
-                          text-[#3F7A5B]
-                          transition-colors
-                          hover:text-[#336249]
-                          sm:flex
-                        "
+                        className={`
+                          rounded-md
+                          px-2.5
+                          py-1.5
+                          text-[10px]
+                          font-medium
+                          transition-all
+                          sm:text-[11px]
+                          ${
+                            activeScope === scope.id
+                              ? 'bg-[#E7F1EA] text-[#3F7A5B]'
+                              : 'text-[#7D8982] hover:bg-[#F1F5F2] hover:text-[#3F7A5B]'
+                          }
+                        `}
                       >
-                        View all
+                        {scope.label}
 
-                        <ArrowRight size={14} />
+                        {searchStarted && (
+                          <span className="ml-1 opacity-60">
+                            {scope.count}
+                          </span>
+                        )}
                       </button>
-                    </div>
+                    ))}
+                  </div>
 
-                    {/* =================================================
-                        AI TOOLS
-                    ================================================== */}
+                  <div
+                    className="
+                      hidden
+                      items-center
+                      gap-1.5
+                      text-[10px]
+                      text-[#9AA49E]
+                      sm:flex
+                    "
+                  >
+                    <CornerDownLeft size={11} />
+                    <span>Search</span>
+                  </div>
+                </div>
 
-                    {tools.length > 0 && (
-                      <div className="px-4 py-4 sm:px-5">
+                {/* =================================================
+                    ATTACHED RESULTS
+                ================================================== */}
 
-                        {/* Section heading */}
+                {searchStarted && (
+                  <div
+                    className="
+                      border-t
+                      border-[#E8EDE9]
+                      bg-white
+                    "
+                  >
+                    {/* LOADING */}
 
-                        <div className="mb-3 flex items-center gap-3">
+                    {loading && (
+                      <div className="px-5 py-8">
+                        <div className="flex items-center justify-center gap-3">
+                          <Loader2
+                            size={18}
+                            className="animate-spin text-[#3F7A5B]"
+                          />
 
-                          <div className="flex items-center gap-2 text-[#3F7A5B]">
+                          <span className="text-xs font-medium text-[#65736A]">
+                            Finding the best matches...
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
-                            <Cpu size={14} />
+                    {/* ERROR */}
 
+                    {!loading && error && (
+                      <div className="px-5 py-8 text-center">
+                        <p className="text-xs text-[#6B7770]">
+                          {error}
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            performSearch(searchQuery)
+                          }
+                          className="
+                            mt-3
+                            text-xs
+                            font-semibold
+                            text-[#3F7A5B]
+                            hover:text-[#336249]
+                          "
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+
+                    {/* RESULTS */}
+
+                    {!loading &&
+                      !error &&
+                      hasResults && (
+                        <div className="p-2.5 sm:p-3">
+
+                          {/* RESULTS LABEL */}
+
+                          <div className="mb-2 flex items-center justify-between px-2">
                             <span
                               className="
-                                text-[10px]
+                                text-[9px]
                                 font-bold
                                 uppercase
                                 tracking-[0.16em]
+                                text-[#8A988E]
                               "
                             >
-                              AI Tools
+                              Top results
                             </span>
 
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/Ai-Tools?search=${encodeURIComponent(
+                                    searchQuery.trim()
+                                  )}`
+                                )
+                              }
+                              className="
+                                hidden
+                                items-center
+                                gap-1
+                                text-[10px]
+                                font-semibold
+                                text-[#3F7A5B]
+                                hover:text-[#336249]
+                                sm:flex
+                              "
+                            >
+                              View all
+                              <ArrowRight size={12} />
+                            </button>
                           </div>
 
-                          <div className="h-px flex-1 bg-[#E3E8E3]" />
+                          {/* ALL / TOOLS */}
 
-                          <span className="text-[10px] text-[#8A988E]">
-                            {tools.length}{' '}
-                            {tools.length === 1
-                              ? 'match'
-                              : 'matches'}
-                          </span>
+                          {filteredResults
+                            .slice(0, 6)
+                            .map((item, index) => {
+                              const isTool =
+                                item.type === 'tool';
 
-                        </div>
+                              const ResourceIcon =
+                                getResourceIcon(
+                                  item.icon
+                                );
 
-                        {/* Tools */}
+                              return (
+                                <button
+                                  key={
+                                    item._id ||
+                                    item.id ||
+                                    item.slug ||
+                                    item.name ||
+                                    index
+                                  }
+                                  type="button"
+                                  onClick={() => {
+                                    if (isTool) {
+                                      navigate(
+                                        `/Ai-tools/${item._id}`
+                                      );
+                                    } else {
+                                      navigate(
+                                        `/resources/${item.slug}`
+                                      );
+                                    }
+                                  }}
+                                  className="
+                                    group
+                                    flex
+                                    w-full
+                                    items-center
+                                    gap-3
+                                    rounded-xl
+                                    px-2.5
+                                    py-2.5
+                                    text-left
+                                    transition-all
+                                    duration-150
+                                    hover:bg-[#F7F9F7]
+                                  "
+                                >
+                                  {/* ICON */}
 
-                        <div className="grid gap-2.5 md:grid-cols-2">
-
-                          {tools.slice(0, 6).map(
-                            (tool, index) => (
-                              <div
-                                key={
-                                  tool._id ||
-                                  tool.id ||
-                                  tool.name ||
-                                  index
-                                }
-                                className="
-                                  group
-                                  flex
-                                  min-w-0
-                                  items-center
-                                  justify-between
-                                  gap-3
-                                  rounded-xl
-                                  border
-                                  border-[#E3E8E3]
-                                  bg-white
-                                  p-3
-                                  transition-all
-                                  duration-200
-                                  hover:border-[#BFD0C4]
-                                  hover:bg-[#FAFAF8]
-                                  hover:shadow-[0_2px_8px_rgba(20,31,25,0.04)]
-                                "
-                              >
-
-                                {/* Tool info */}
-
-                                <div className="flex min-w-0 items-center gap-3">
-
-                                  {/* Logo */}
-
-                                  {tool.image ? (
-                                    <img
-                                      src={tool.image}
-                                      alt={tool.name}
-                                      className="
-                                        h-11
-                                        w-11
-                                        shrink-0
-                                        rounded-lg
-                                        border
-                                        border-[#E3E8E3]
-                                        bg-white
-                                        object-cover
-                                      "
-                                    />
+                                  {isTool ? (
+                                    item.image ? (
+                                      <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="
+                                          h-9
+                                          w-9
+                                          shrink-0
+                                          rounded-lg
+                                          border
+                                          border-[#E3E8E3]
+                                          object-cover
+                                        "
+                                      />
+                                    ) : (
+                                      <div
+                                        className="
+                                          flex
+                                          h-9
+                                          w-9
+                                          shrink-0
+                                          items-center
+                                          justify-center
+                                          rounded-lg
+                                          border
+                                          border-[#DCE6DF]
+                                          bg-[#E7F1EA]
+                                          text-xs
+                                          font-bold
+                                          text-[#3F7A5B]
+                                        "
+                                      >
+                                        {item.name
+                                          ?.charAt(0)
+                                          ?.toUpperCase() ||
+                                          'A'}
+                                      </div>
+                                    )
                                   ) : (
                                     <div
                                       className="
                                         flex
-                                        h-11 w-11
+                                        h-9
+                                        w-9
                                         shrink-0
                                         items-center
                                         justify-center
                                         rounded-lg
-                                        border
-                                        border-[#E3E8E3]
                                         bg-[#E7F1EA]
-                                        text-sm
-                                        font-bold
                                         text-[#3F7A5B]
                                       "
                                     >
-                                      {tool.name
-                                        ?.charAt(0)
-                                        ?.toUpperCase() || 'A'}
+                                      <ResourceIcon
+                                        size={16}
+                                      />
                                     </div>
                                   )}
 
-                                  {/* Name + description */}
+                                  {/* CONTENT */}
 
-                                  <div className="min-w-0">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <p
+                                        className="
+                                          truncate
+                                          text-xs
+                                          font-semibold
+                                          text-[#202A24]
+                                          transition-colors
+                                          group-hover:text-[#3F7A5B]
+                                          sm:text-sm
+                                        "
+                                      >
+                                        {item.name}
+                                      </p>
 
-                                    <h3
-                                      className="
-                                        truncate
-                                        text-sm
-                                        font-semibold
-                                        text-[#141F19]
-                                        transition-colors
-                                        group-hover:text-[#3F7A5B]
-                                      "
-                                    >
-                                      {tool.name}
-                                    </h3>
+                                      <span
+                                        className="
+                                          hidden
+                                          rounded
+                                          bg-[#F1F5F2]
+                                          px-1.5
+                                          py-0.5
+                                          text-[9px]
+                                          text-[#7A877F]
+                                          sm:inline-block
+                                        "
+                                      >
+                                        {isTool
+                                          ? 'AI Tool'
+                                          : 'Resource'}
+                                      </span>
+                                    </div>
 
                                     <p
                                       className="
                                         mt-0.5
-                                        line-clamp-1
-                                        text-[11px]
-                                        leading-5
+                                        truncate
+                                        text-[10px]
                                         text-[#8A988E]
+                                        sm:text-[11px]
                                       "
                                     >
-                                      {tool.whatItDoes ||
-                                        tool.description ||
-                                        'AI tool for your workflow.'}
-                                    </p>
-
-                                  </div>
-                                </div>
-
-                                {/* View */}
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    navigate(
-                                      `/Ai-tools/${tool._id}`
-                                    )
-                                  }
-                                  className="
-                                    flex
-                                    shrink-0
-                                    items-center
-                                    gap-1
-                                    rounded-lg
-                                    bg-[#3F7A5B]
-                                    px-3
-                                    py-2
-                                    text-[10px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-white
-                                    transition-colors
-                                    hover:bg-[#336249]
-                                  "
-                                >
-                                  View
-
-                                  <ArrowRight size={12} />
-                                </button>
-
-                              </div>
-                            )
-                          )}
-
-                        </div>
-                      </div>
-                    )}
-
-                    {/* =================================================
-                        RESOURCES
-                    ================================================== */}
-
-                    {resources.length > 0 && (
-                      <div
-                        className="
-                          border-t
-                          border-[#E3E8E3]
-                          px-4 py-4
-                          sm:px-5
-                        "
-                      >
-
-                        {/* Section heading */}
-
-                        <div className="mb-3 flex items-center gap-3">
-
-                          <div className="flex items-center gap-2 text-[#3F7A5B]">
-
-                            <BookOpen size={14} />
-
-                            <span
-                              className="
-                                text-[10px]
-                                font-bold
-                                uppercase
-                                tracking-[0.16em]
-                              "
-                            >
-                              Learning Resources
-                            </span>
-
-                          </div>
-
-                          <div className="h-px flex-1 bg-[#E3E8E3]" />
-
-                        </div>
-
-                        {/* Resource list */}
-
-                        <div className="space-y-2">
-
-                          {resources
-                            .slice(0, 6)
-                            .map((resource, index) => {
-                              const IconComponent =
-                                getResourceIcon(
-                                  resource.icon
-                                );
-
-                              return (
-                                <div
-                                  key={
-                                    resource._id ||
-                                    resource.id ||
-                                    resource.slug ||
-                                    resource.name ||
-                                    index
-                                  }
-                                  className="
-                                    group
-                                    flex
-                                    items-center
-                                    justify-between
-                                    gap-3
-                                    rounded-xl
-                                    border
-                                    border-[#E3E8E3]
-                                    bg-white
-                                    p-3
-                                    transition-all
-                                    duration-200
-                                    hover:border-[#BFD0C4]
-                                    hover:bg-[#FAFAF8]
-                                  "
-                                >
-
-                                  {/* Resource info */}
-
-                                  <div className="flex min-w-0 items-center gap-3">
-
-                                    <div
-                                      className="
-                                        flex
-                                        h-10
-                                        w-10
-                                        shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-lg
-                                        bg-[#E7F1EA]
-                                        text-[#3F7A5B]
-                                        transition-colors
-                                        group-hover:bg-[#3F7A5B]
-                                        group-hover:text-white
-                                      "
-                                    >
-                                      <IconComponent size={17} />
-                                    </div>
-
-                                    <div className="min-w-0">
-
-                                      <h3
-                                        className="
-                                          truncate
-                                          text-sm
-                                          font-semibold
-                                          text-[#141F19]
-                                        "
-                                      >
-                                        {resource.name}
-                                      </h3>
-
-                                      <p
-                                        className="
-                                          mt-0.5
-                                          line-clamp-1
-                                          text-[10px]
-                                          text-[#8A988E]
-                                        "
-                                      >
-                                        {resource.short_description ||
-                                          resource.description ||
+                                      {isTool
+                                        ? item.whatItDoes ||
+                                          item.description ||
+                                          'AI tool for your workflow.'
+                                        : item.short_description ||
+                                          item.description ||
                                           'Learning resource'}
-                                      </p>
-
-                                    </div>
-
+                                    </p>
                                   </div>
 
-                                  {/* Resource link */}
+                                  {/* RIGHT */}
 
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      navigate(
-                                        `/resources/${resource.slug}`
-                                      )
-                                    }
-                                    className="
-                                      flex
-                                      h-9
-                                      w-9
-                                      shrink-0
-                                      items-center
-                                      justify-center
-                                      rounded-lg
-                                      bg-[#F1F5F2]
-                                      text-[#3F7A5B]
-                                      transition-all
-                                      hover:bg-[#3F7A5B]
-                                      hover:text-white
-                                    "
-                                    aria-label={`Open ${resource.name}`}
-                                  >
-                                    <ArrowUpRight size={16} />
-                                  </button>
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    <span
+                                      className="
+                                        hidden
+                                        text-[9px]
+                                        text-[#9AA49E]
+                                        sm:block
+                                      "
+                                    >
+                                      {isTool
+                                        ? 'Tool'
+                                        : 'Learn'}
+                                    </span>
 
-                                </div>
+                                    <ArrowUpRight
+                                      size={14}
+                                      className="
+                                        text-[#A0AAA4]
+                                        transition-all
+                                        group-hover:translate-x-0.5
+                                        group-hover:-translate-y-0.5
+                                        group-hover:text-[#3F7A5B]
+                                      "
+                                    />
+                                  </div>
+                                </button>
                               );
                             })}
 
+                          {/* VIEW ALL */}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(
+                                `/Ai-Tools?search=${encodeURIComponent(
+                                  searchQuery.trim()
+                                )}`
+                              )
+                            }
+                            className="
+                              mt-1
+                              flex
+                              w-full
+                              items-center
+                              justify-center
+                              gap-2
+                              border-t
+                              border-[#E8EDE9]
+                              px-3
+                              pt-3
+                              text-[10px]
+                              font-semibold
+                              text-[#3F7A5B]
+                              hover:text-[#336249]
+                            "
+                          >
+                            Explore all results
+                            <ArrowRight size={12} />
+                          </button>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* -------------------------------------------------
-                        MOBILE VIEW ALL
-                    -------------------------------------------------- */}
+                    {/* NO RESULTS */}
 
-                    <div
-                      className="
-                        border-t
-                        border-[#E3E8E3]
-                        bg-[#FAFAF8]
-                        px-5 py-3
-                      "
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(
-                            `/Ai-Tools?search=${encodeURIComponent(
-                              searchQuery.trim()
-                            )}`
-                          )
-                        }
-                        className="
-                          flex
-                          w-full
-                          items-center
-                          justify-center
-                          gap-2
-                          text-xs
-                          font-semibold
-                          text-[#3F7A5B]
-                          transition-colors
-                          hover:text-[#336249]
-                        "
-                      >
-                        Explore all search results
+                    {!loading &&
+                      !error &&
+                      searchStarted &&
+                      !hasResults && (
+                        <div className="px-5 py-8 text-center">
+                          <div
+                            className="
+                              mx-auto
+                              mb-3
+                              flex
+                              h-9
+                              w-9
+                              items-center
+                              justify-center
+                              rounded-full
+                              bg-[#E7F1EA]
+                              text-[#3F7A5B]
+                            "
+                          >
+                            <Search size={16} />
+                          </div>
 
-                        <ArrowRight size={14} />
-                      </button>
-                    </div>
+                          <p className="text-xs font-semibold text-[#202A24]">
+                            No results found
+                          </p>
 
+                          <p className="mt-1 text-[10px] text-[#8A988E]">
+                            Nothing matched "{searchQuery}"
+                          </p>
+                        </div>
+                      )}
                   </div>
                 )}
+              </div>
+            </form>
 
-              {/* -------------------------------------------------
-                  NO RESULTS
-              -------------------------------------------------- */}
+            {/* =================================================
+                COMMAND HINT
+            ================================================== */}
 
-              {!loading &&
-                !error &&
-                searchStarted &&
-                !hasResults && (
-                  <div
-                    className="
-                      rounded-xl
-                      border border-[#D9E1DB]
-                      bg-white
-                      px-6 py-9
-                      text-center
-                      shadow-[0_1px_2px_rgba(20,31,25,0.04)]
-                    "
-                  >
-                    <div
-                      className="
-                        mx-auto
-                        mb-3
-                        flex
-                        h-10
-                        w-10
-                        items-center
-                        justify-center
-                        rounded-full
-                        bg-[#E7F1EA]
-                        text-[#3F7A5B]
-                      "
-                    >
-                      <Search size={18} />
-                    </div>
+            <div
+              className="
+                mt-3
+                flex
+                items-center
+                justify-center
+                gap-2
+                text-[10px]
+                text-[#8A988E]
+              "
+            >
+              <span className="flex items-center gap-1">
+                <span
+                  className="
+                    flex
+                    h-5
+                    min-w-5
+                    items-center
+                    justify-center
+                    rounded
+                    border
+                    border-[#DCE4DE]
+                    bg-white
+                    px-1
+                    font-medium
+                  "
+                >
+                  <Command size={9} />
+                </span>
 
-                    <p className="text-sm font-semibold text-[#141F19]">
-                      No results found
-                    </p>
+                <span>K</span>
+              </span>
 
-                    <p className="mt-1 text-xs text-[#8A988E]">
-                      We couldn't find anything for "
-                      {searchQuery}"
-                    </p>
-                  </div>
-                )}
+              <span>to focus search</span>
 
+              <span className="text-[#C8D0CB]">•</span>
+
+              <span>Search by task, tool or category</span>
             </div>
-          )}
+          </div>
 
           {/* =====================================================
               POPULAR SEARCHES
-
-              These remain below the search/results area.
           ====================================================== */}
 
-          <div className="hero-popular mt-5 flex flex-wrap items-center justify-center gap-2">
-
-            <span className="mr-1 text-xs text-[#8A988E]">
-              Popular
+          <div
+            className="
+              hero-popular
+              mt-6
+              flex
+              max-w-2xl
+              flex-wrap
+              items-center
+              justify-center
+              gap-2
+            "
+          >
+            <span className="mr-1 text-[11px] text-[#8A988E]">
+              Try
             </span>
 
             {popularSearches.map((query) => (
@@ -1098,36 +1178,46 @@ const Hero = () => {
                   handlePopularSearch(query)
                 }
                 className="
-                  rounded-lg
+                  rounded-full
                   border
-                  border-[#E3E8E3]
+                  border-[#DFE6E1]
                   bg-white
-                  px-3 py-1.5
-                  text-xs
+                  px-3
+                  py-1.5
+                  text-[10px]
                   font-medium
-                  text-[#4B5C53]
-                  transition-colors
+                  text-[#526158]
+                  shadow-[0_1px_2px_rgba(20,31,25,0.02)]
+                  transition-all
                   duration-150
-                  hover:border-[#3F7A5B]
+                  hover:-translate-y-0.5
+                  hover:border-[#BFD0C4]
+                  hover:bg-[#F7FAF8]
                   hover:text-[#3F7A5B]
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-[#3F7A5B]
-                  focus:ring-offset-2
                 "
               >
                 {query}
               </button>
             ))}
-
           </div>
 
           {/* =====================================================
               ACTIONS
           ====================================================== */}
 
-          <div className="hero-actions mt-7 flex flex-wrap items-center justify-center gap-5 text-sm">
-
+          <div
+            className="
+              hero-actions
+              mt-7
+              flex
+              flex-wrap
+              items-center
+              justify-center
+              gap-x-6
+              gap-y-3
+              text-xs
+            "
+          >
             <button
               type="button"
               onClick={() => navigate('/Ai-Tools')}
@@ -1136,17 +1226,16 @@ const Hero = () => {
                 inline-flex
                 items-center
                 gap-1.5
-                font-medium
+                font-semibold
                 text-[#3F7A5B]
                 transition-colors
                 hover:text-[#336249]
-                focus:outline-none
               "
             >
               Explore all tools
 
               <ArrowRight
-                size={15}
+                size={14}
                 className="
                   transition-transform
                   duration-200
@@ -1162,7 +1251,7 @@ const Hero = () => {
               }
               className="
                 font-medium
-                text-[#4B5C53]
+                text-[#647169]
                 transition-colors
                 hover:text-[#141F19]
               "
@@ -1177,40 +1266,45 @@ const Hero = () => {
               }
               className="
                 font-medium
-                text-[#4B5C53]
+                text-[#647169]
                 transition-colors
                 hover:text-[#141F19]
               "
             >
               Learning resources
             </button>
-
           </div>
         </div>
 
         {/* =====================================================
             DEFAULT DIRECTORY PREVIEW
-
-            Only show when user hasn't searched.
+            HIDDEN AFTER SEARCH
         ====================================================== */}
 
         {!searchStarted && (
-          <div className="hero-preview mx-auto mt-16 max-w-3xl sm:mt-20">
-
+          <div
+            className="
+              hero-preview
+              mx-auto
+              mt-14
+              max-w-3xl
+              sm:mt-16
+            "
+          >
             <div className="hero-preview-inner">
 
               <div
                 className="
                   overflow-hidden
-                  rounded-xl
+                  rounded-2xl
                   border
-                  border-[#E3E8E3]
-                  bg-white
-                  shadow-[0_1px_2px_rgba(20,31,25,0.04)]
+                  border-[#E1E8E3]
+                  bg-white/90
+                  shadow-[0_16px_45px_rgba(20,31,25,0.06)]
+                  backdrop-blur-sm
                 "
               >
-
-                {/* Preview header */}
+                {/* HEADER */}
 
                 <div
                   className="
@@ -1218,18 +1312,18 @@ const Hero = () => {
                     items-center
                     justify-between
                     border-b
-                    border-[#E3E8E3]
-                    px-5 py-4
-                    sm:px-6
+                    border-[#E5EAE6]
+                    px-4
+                    py-3.5
+                    sm:px-5
                   "
                 >
-
                   <div className="flex items-center gap-3">
-
                     <div
                       className="
                         flex
-                        h-8 w-8
+                        h-8
+                        w-8
                         items-center
                         justify-center
                         rounded-lg
@@ -1237,24 +1331,18 @@ const Hero = () => {
                         text-[#3F7A5B]
                       "
                     >
-                      <Search
-                        size={15}
-                        strokeWidth={1.8}
-                      />
+                      <Search size={14} />
                     </div>
 
                     <div className="text-left">
-
-                      <p className="text-sm font-semibold text-[#141F19]">
-                        Search results
+                      <p className="text-xs font-semibold text-[#202A24]">
+                        AI tool directory
                       </p>
 
-                      <p className="mt-0.5 text-xs text-[#8A988E]">
-                        Tools matching your workflow
+                      <p className="mt-0.5 text-[10px] text-[#8A988E]">
+                        Discover tools for your workflow
                       </p>
-
                     </div>
-
                   </div>
 
                   <button
@@ -1265,26 +1353,21 @@ const Hero = () => {
                     className="
                       hidden
                       items-center
-                      gap-1.5
-                      text-xs
-                      font-medium
+                      gap-1
+                      text-[10px]
+                      font-semibold
                       text-[#3F7A5B]
-                      transition-colors
-                      hover:text-[#336249]
                       sm:flex
                     "
                   >
                     View all
-
-                    <ArrowRight size={14} />
+                    <ArrowRight size={12} />
                   </button>
-
                 </div>
 
-                {/* Preview tools */}
+                {/* TOOLS */}
 
-                <div className="divide-y divide-[#E3E8E3]">
-
+                <div className="divide-y divide-[#E8EDE9]">
                   {[
                     {
                       name: 'ChatGPT',
@@ -1329,30 +1412,29 @@ const Hero = () => {
                         flex
                         w-full
                         items-center
-                        gap-4
-                        px-5 py-4
+                        gap-3
+                        px-4
+                        py-3.5
                         text-left
                         transition-colors
-                        duration-150
                         hover:bg-[#FAFAF8]
-                        sm:px-6
+                        sm:gap-4
+                        sm:px-5
                       "
                     >
-
-                      {/* Logo */}
-
                       <div
                         className="
                           flex
-                          h-11 w-11
+                          h-9
+                          w-9
                           shrink-0
                           items-center
                           justify-center
                           rounded-lg
                           border
-                          border-[#E3E8E3]
+                          border-[#E1E8E3]
                           bg-white
-                          text-sm
+                          text-xs
                           font-semibold
                           text-[#3F7A5B]
                         "
@@ -1360,21 +1442,16 @@ const Hero = () => {
                         {tool.initials}
                       </div>
 
-                      {/* Content */}
-
                       <div className="min-w-0 flex-1">
-
-                        <div className="flex items-center gap-3">
-
+                        <div className="flex items-center gap-2">
                           <h3
                             className="
                               truncate
-                              text-sm
+                              text-xs
                               font-semibold
-                              text-[#141F19]
-                              transition-colors
+                              text-[#202A24]
                               group-hover:text-[#3F7A5B]
-                              sm:text-base
+                              sm:text-sm
                             "
                           >
                             {tool.name}
@@ -1383,10 +1460,11 @@ const Hero = () => {
                           <span
                             className="
                               hidden
-                              rounded-md
+                              rounded
                               bg-[#E7F1EA]
-                              px-2 py-1
-                              text-[11px]
+                              px-1.5
+                              py-0.5
+                              text-[9px]
                               font-medium
                               text-[#3F7A5B]
                               sm:inline-flex
@@ -1394,37 +1472,31 @@ const Hero = () => {
                           >
                             {tool.category}
                           </span>
-
                         </div>
 
                         <p
                           className="
-                            mt-1
-                            line-clamp-1
-                            text-xs
-                            leading-5
+                            mt-0.5
+                            truncate
+                            text-[10px]
                             text-[#8A988E]
-                            sm:text-sm
+                            sm:text-xs
                           "
                         >
                           {tool.description}
                         </p>
-
                       </div>
-
-                      {/* Metadata */}
 
                       <div
                         className="
                           hidden
                           shrink-0
                           items-center
-                          gap-4
+                          gap-3
                           sm:flex
                         "
                       >
-
-                        <span className="text-xs text-[#8A988E]">
+                        <span className="text-[10px] text-[#8A988E]">
                           {tool.pricing}
                         </span>
 
@@ -1433,56 +1505,51 @@ const Hero = () => {
                             flex
                             items-center
                             gap-1
-                            text-xs
-                            text-[#4B5C53]
+                            text-[10px]
+                            text-[#59675F]
                           "
                         >
                           <Star
-                            size={12}
+                            size={10}
                             className="text-[#3F7A5B]"
                             fill="currentColor"
                           />
-
                           {tool.rating}
                         </span>
 
                         <ArrowRight
-                          size={15}
+                          size={13}
                           className="
-                            text-[#8A988E]
+                            text-[#9AA49E]
                             transition-all
                             group-hover:translate-x-1
                             group-hover:text-[#3F7A5B]
                           "
                         />
-
                       </div>
 
-                      {/* Mobile arrow */}
-
                       <ArrowRight
-                        size={16}
+                        size={14}
                         className="
                           shrink-0
-                          text-[#8A988E]
+                          text-[#9AA49E]
                           sm:hidden
                         "
                       />
-
                     </button>
                   ))}
-
                 </div>
 
-                {/* Preview bottom */}
+                {/* FOOTER */}
 
                 <div
                   className="
                     border-t
-                    border-[#E3E8E3]
+                    border-[#E5EAE6]
                     bg-[#FAFAF8]
-                    px-5 py-3
-                    sm:px-6
+                    px-4
+                    py-3
+                    sm:px-5
                   "
                 >
                   <button
@@ -1496,52 +1563,38 @@ const Hero = () => {
                       items-center
                       justify-center
                       gap-2
-                      text-xs
-                      font-medium
+                      text-[10px]
+                      font-semibold
                       text-[#3F7A5B]
-                      transition-colors
-                      hover:text-[#336249]
-                      sm:text-sm
+                      sm:text-xs
                     "
                   >
                     Explore the full directory
-
-                    <ArrowRight size={14} />
+                    <ArrowRight size={12} />
                   </button>
                 </div>
-
               </div>
 
-              {/* Preview caption */}
+              {/* CAPTION */}
 
               <div
                 className="
                   mt-4
                   flex
-                  flex-col
                   items-center
                   justify-center
-                  gap-1
+                  gap-2
                   text-center
-                  text-xs
+                  text-[10px]
                   text-[#8A988E]
-                  sm:flex-row
-                  sm:gap-2
                 "
               >
+                <MousePointer2 size={11} />
+
                 <span>
                   Search by task, category, pricing or platform.
                 </span>
-
-                <span className="hidden text-[#C3CCC5] sm:block">
-                  ·
-                </span>
-
-                <span>
-                  Compare before you choose.
-                </span>
               </div>
-
             </div>
           </div>
         )}
@@ -1554,22 +1607,55 @@ const Hero = () => {
           className="
             hero-followup
             mx-auto
-            mt-16
+            mt-14
             max-w-2xl
             border-t
             border-[#E3E8E3]
-            pt-8
+            pt-7
             text-center
-            sm:mt-20
+            sm:mt-16
           "
         >
-          <p className="text-sm leading-6 text-[#8A988E]">
+          <p className="text-xs leading-6 text-[#8A988E] sm:text-sm">
             A focused directory for discovering useful AI tools,
             comparing options, and finding resources to learn.
           </p>
         </div>
-
       </div>
+
+      {/* SHIMMER KEYFRAMES */}
+
+      <style>{`
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+
+          15% {
+            opacity: 1;
+          }
+
+          50% {
+            opacity: 1;
+          }
+
+          100% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };
