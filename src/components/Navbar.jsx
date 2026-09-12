@@ -175,6 +175,7 @@ const Navbar = () => {
                 w-auto
                 object-contain
                 transition-transform
+                cursor-pointer
                 duration-200
                 group-hover:scale-[1.02]
                 sm:h-9
